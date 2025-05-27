@@ -1,0 +1,31 @@
+.editor-header {
+  width: 100vw;
+  background: linear-gradient(to right, #1976d2, #2196f3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Botones */
+.editor-header .btn {
+  min-width: 160px;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+/* Hover */
+.editor-header .btn:hover {
+  background-color: #e0e0e0;
+}
+
+.editor-header .btn-danger:hover {
+  background-color: #c62828;
+  color: #fff;
+}
+
+/* Responsive spacing */
+@media (max-width: 576px) {
+  .editor-header .btn {
+    width: 100%;
+  }
+}

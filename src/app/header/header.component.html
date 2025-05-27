@@ -1,0 +1,39 @@
+<header class="editor-header">
+  <div class="container-fluid py-2 px-4 text-white fw-bold fs-5">
+    Editor de Etiquetas
+  </div>
+  <div class="container-fluid pb-3 px-4">
+    <div class="d-flex flex-wrap gap-3 justify-content-center">
+      <button class="btn btn-light" (click)="insertarTexto()">
+        Insertar texto
+      </button>
+      <button class="btn btn-light" (click)="insertarImagen()">
+        Insertar imagen
+      </button>
+      <button class="btn btn-danger" (click)="eliminarSeleccion()">
+        Eliminar seleccionado
+      </button>
+    </div>
+  </div>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Producto</mat-label>
+    <mat-select (selectionChange)="seleccionarProducto($event.value)">
+      <mat-option *ngFor="let producto of productos" [value]="producto">
+        {{ producto.nombre }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div class="d-flex align-items-center gap-3">
+    <button class="btn btn-light" (click)="agregarCampo('ID')">
+      Agregar ID
+    </button>
+    <button class="btn btn-light" (click)="agregarCampo('NOMBRE')">
+      Agregar Nombre
+    </button>
+    <button class="btn btn-light" (click)="agregarCampo('PUNIT')">
+      Agregar Precio
+    </button>
+  </div>
+</header>

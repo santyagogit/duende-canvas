@@ -1,0 +1,26 @@
+<h2 mat-dialog-title>Insertar imagen</h2>
+<mat-dialog-content class="d-flex flex-column gap-3">
+  <div>
+    <label for="fileInput">Desde tu PC:</label>
+    <input
+      type="file"
+      id="fileInput"
+      (change)="onFileSelected($event)"
+      accept="image/*"
+    />
+  </div>
+
+  <div>
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Desde URL</mat-label>
+      <input matInput placeholder="https://..." [(ngModel)]="imageUrl" />
+    </mat-form-field>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button mat-raised-button color="primary" (click)="insertImage()">
+    Insertar
+  </button>
+</mat-dialog-actions>

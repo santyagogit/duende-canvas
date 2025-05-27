@@ -72,7 +72,9 @@ export class CanvasService {
 
   }
 
-  insertarTexto(texto: string, fontFamily: string = 'Arial') {
+  async insertarTexto(texto: string, fontFamily: string = 'Arial') {
+    await (document as any).fonts.load(`18px "${fontFamily}"`);
+
     const text = new Textbox(texto, {
       left: 50,
       top: 50,

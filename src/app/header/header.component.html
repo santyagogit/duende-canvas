@@ -16,16 +16,18 @@
     </div>
   </div>
 
-  <mat-form-field appearance="fill">
-    <mat-label>Producto</mat-label>
-    <mat-select (selectionChange)="seleccionarProducto($event.value)">
-      <mat-option *ngFor="let producto of productos" [value]="producto">
-        {{ producto.nombre }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
+  <div class="d-flex justify-content-center my-3">
+    <mat-form-field appearance="fill">
+      <mat-label>Producto</mat-label>
+      <mat-select (selectionChange)="seleccionarProducto($event.value)">
+        <mat-option *ngFor="let producto of productos" [value]="producto">
+          {{ producto.nombre }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
 
-  <div class="d-flex align-items-center gap-3">
+  <div class="d-flex justify-content-center align-items-center gap-3 mb-3">
     <button class="btn btn-light" (click)="agregarCampo('ID')">
       Agregar ID
     </button>

@@ -65,7 +65,7 @@ export class HeaderComponent {
     switch (campo) {
       case 'ID':
         texto = this.productoSeleccionado.id;
-        fuente = 'code128';
+        fuente = 'Code 128';
         break;
       case 'NOMBRE':
         texto = this.productoSeleccionado.nombre;
@@ -75,6 +75,7 @@ export class HeaderComponent {
         break;
     }
 
+    console.log(`Insertando texto: "${texto}" con fuente: ${fuente}`);
     this.canvasService.insertarTexto(texto, fuente);
   }
 

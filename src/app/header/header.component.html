@@ -38,4 +38,23 @@
       Agregar Precio
     </button>
   </div>
+
+  <div>
+    <button class="btn btn-light" (click)="limpiarCanvas()">
+      Limpiar Etiqueta
+    </button>
+  </div>
+
+  <div>
+    <button class="btn btn-light" (click)="guardarEtiqueta()">
+      Guardar etiqueta
+    </button>
+  </div>
+
+  <div>
+    <input type="file" id="fileInput" accept=".json" hidden />
+    <button class="btn btn-light" (click)="cargarEtiqueta()">
+      Cargar etiqueta
+    </button>
+  </div>
 </header>

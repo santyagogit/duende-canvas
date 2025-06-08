@@ -39,7 +39,7 @@ export class HeaderComponent {
 
   // Acá irán botones para agregar texto, imagen, cambiar color, etc.
   insertarTexto() {
-    this.canvasService.insertText('Nuevo texto');
+    this.canvasService.insertarTexto('Nuevo texto');
   }
 
   async insertarImagen() {
@@ -52,6 +52,12 @@ export class HeaderComponent {
     if (activeObject) {
       canvas.remove(activeObject);
       canvas.renderAll();
+    }
+  }
+
+  limpiarCanvas() {
+    if (confirm("¿Seguro que querés borrar todo el contenido del canvas?")) {
+      this.canvasService.limpiarCanvas();
     }
   }
 
@@ -77,6 +83,15 @@ export class HeaderComponent {
 
     console.log(`Insertando texto: "${texto}" con fuente: ${fuente}`);
     this.canvasService.insertarTexto(texto, fuente);
+  }
+
+  guardarEtiqueta() {
+    this.canvasService.guardarComoJSON();
+  }
+
+
+  cargarEtiqueta() {
+    this.canvasService.abrirFileInput();
   }
 
 }

@@ -56,23 +56,7 @@ export class CanvasService {
   }
 
   // Metodo para insertar texto
-  insertText(textContent: string) {
-    const text = new Textbox(textContent, {
-      left: 100,
-      top: 100,
-      fontSize: 24,
-      fill: 'black'
-    });
-
-    this.aplicarEstilosPorDefecto(text);
-    this.canvas.add(text);
-    this.canvas.setActiveObject(text);
-    // text.setCoords();
-    this.canvas.renderAll();
-
-  }
-
-  async insertarTexto(texto: string, fontFamily: string = 'Arial') {
+  async insertarTexto(texto: string, fontFamily: string = 'Arial', opcionesExtra: Partial<Textbox> = {}) {
     await (document as any).fonts.load(`18px "${fontFamily}"`);
 
     const text = new Textbox(texto, {
@@ -81,13 +65,18 @@ export class CanvasService {
       fontSize: 18,
       fontFamily: fontFamily,
       editable: true,
-      fill: '#000'
+      fill: '#000',
+      ...opcionesExtra // Permite pasar estilos adicionales
     });
 
+    this.aplicarEstilosPorDefecto?.(text);
+    this.redondearControlRotacion?.(text);
+
     this.canvas.add(text);
-    this.redondearControlRotacion(text);
     this.canvas.setActiveObject(text);
+    this.canvas.renderAll();
   }
+
 
 
   makeObjectEditable(object: FabricObject) {
@@ -102,19 +91,9 @@ export class CanvasService {
     }
   }
 
-
-  // // Método para insertar una imagen
-  // async insertImage(url: string) {
-  //   const img = await FabricImage.fromURL(url);
-  //   img.set({
-  //     left: 100,
-  //     top: 100,
-  //     scaleX: 0.5,
-  //     scaleY: 0.5
-  //   });
-
-
-  // }
+  exportarJSON(): string {
+    return JSON.stringify(this.canvas.toJSON());
+  }
 
   openImageDialog() {
     console.log('Opening image dialog');
@@ -131,8 +110,6 @@ export class CanvasService {
         this.canvas.add(img);
         this.canvas.setActiveObject(img);
         this.canvas.renderAll();
-        // this.canvas.add(img);
-        // this.canvas.renderAll();
       }
     });
   }
@@ -189,5 +166,82 @@ export class CanvasService {
 
     target.setCoords();
   }
+
+  guardarComoJSON() {
+    const json = JSON.stringify(this.canvas.toJSON()); // Incluye propiedades personalizadas
+
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'etiqueta.json';
+    a.click();
+
+    URL.revokeObjectURL(url);
+  }
+
+  async cargarDesdeJSON(json: string) {
+    await new Promise<void>((resolve) => {
+      this.canvas.loadFromJSON(json, () => {
+        resolve();
+      });
+    });
+
+    await (document as any).fonts.ready;
+
+    this.canvas.getObjects().forEach(obj => obj.setCoords());
+    this.canvas.renderAll();
+
+    this.canvas.getObjects().forEach(obj => {
+      this.aplicarEstilosPorDefecto(obj);
+      this.redondearControlRotacion(obj);
+    });
+  }
+
+  limpiarCanvas() {
+    this.canvas.getObjects().forEach(obj => this.canvas.remove(obj));
+    this.canvas.renderAll();
+  }
+
+  async cargarEtiqueta(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    const reader = new FileReader();
+
+    reader.onload = async () => {
+      const json = reader.result as string;
+      await this.cargarDesdeJSON(json);
+    };
+
+    reader.readAsText(file);
+  }
+
+  abrirFileInput() {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+
+    fileInput.onchange = async (event: Event) => {
+      const input = event.target as HTMLInputElement;
+      if (!input.files || input.files.length === 0) return;
+
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = async () => {
+        const json = reader.result as string;
+        await this.cargarDesdeJSON(json);
+      };
+
+      reader.readAsText(file);
+    };
+
+    fileInput.click();
+  }
+
+
 
 }

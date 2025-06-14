@@ -56,9 +56,7 @@ export class HeaderComponent {
   }
 
   limpiarCanvas() {
-    if (confirm("¿Seguro que querés borrar todo el contenido del canvas?")) {
-      this.canvasService.limpiarCanvas();
-    }
+    this.canvasService.limpiarCanvas();
   }
 
   agregarCampo(campo: 'ID' | 'NOMBRE' | 'PUNIT') {

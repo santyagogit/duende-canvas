@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Canvas, FabricImage, FabricObject, Textbox } from 'fabric';
 import { InsertImageDialogComponent } from '../../dialogs/insert-image-dialog/insert-image-dialog.component';
+import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
 
 @Injectable({
   providedIn: 'root'
@@ -199,9 +200,21 @@ export class CanvasService {
     });
   }
 
-  limpiarCanvas() {
-    this.canvas.getObjects().forEach(obj => this.canvas.remove(obj));
-    this.canvas.renderAll();
+  limpiarCanvas(): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '300px',
+      data: {
+        title: 'Confirmación',
+        message: '¿Seguro que querés borrar todo el contenido del canvas?'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.canvas.getObjects().forEach(obj => this.canvas.remove(obj));
+        this.canvas.renderAll();
+      }
+    });
   }
 
   async cargarEtiqueta(event: Event) {

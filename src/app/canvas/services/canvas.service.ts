@@ -169,7 +169,14 @@ export class CanvasService {
   }
 
   guardarComoJSON() {
-    const json = JSON.stringify(this.canvas.toJSON()); // Incluye propiedades personalizadas
+
+    const data = {
+      width: this.canvas.getWidth(),
+      height: this.canvas.getHeight(),
+      objects: this.canvas.toJSON().objects,
+    };
+
+    const json = JSON.stringify(data); // Incluye propiedades personalizadas
 
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -183,8 +190,15 @@ export class CanvasService {
   }
 
   async cargarDesdeJSON(json: string) {
+    const parsed = JSON.parse(json);
+
+    // Establecer tamaño del canvas ANTES de cargar los objetos
+    if (parsed.width && parsed.height) {
+      this.canvas.setDimensions({ width: parsed.width, height: parsed.height });
+    }
+
     await new Promise<void>((resolve) => {
-      this.canvas.loadFromJSON(json, () => {
+      this.canvas.loadFromJSON(parsed, () => {
         resolve();
       });
     });
@@ -253,6 +267,11 @@ export class CanvasService {
     };
 
     fileInput.click();
+  }
+
+  setCanvasSize(width: number, height: number) {
+    this.canvas.setDimensions({ width, height });
+    this.canvas.renderAll();
   }
 
 

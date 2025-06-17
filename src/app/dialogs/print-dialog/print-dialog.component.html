@@ -1,0 +1,32 @@
+<h2 mat-dialog-title>Configuración de impresión</h2>
+<mat-dialog-content class="d-flex flex-column gap-3">
+  <mat-form-field appearance="fill">
+    <mat-label>Tamaño de hoja</mat-label>
+    <mat-select [(value)]="config.hoja">
+      <mat-option value="a4">A4</mat-option>
+      <mat-option value="letter">Letter</mat-option>
+      <mat-option value="personalizado">Personalizado</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div *ngIf="config.hoja === 'personalizado'" class="d-flex gap-2">
+    <mat-form-field>
+      <mat-label>Ancho (mm)</mat-label>
+      <input matInput [(ngModel)]="config.anchoPersonalizado" type="number" />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Alto (mm)</mat-label>
+      <input matInput [(ngModel)]="config.altoPersonalizado" type="number" />
+    </mat-form-field>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancelar()">Cancelar</button>
+  <button mat-button color="accent" (click)="onVistaPrevia()">
+    Vista Previa
+  </button>
+  <button mat-flat-button color="primary" (click)="onImprimir()">
+    Imprimir
+  </button>
+</mat-dialog-actions>

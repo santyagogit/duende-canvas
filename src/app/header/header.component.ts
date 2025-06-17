@@ -1,10 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, NgModule } from '@angular/core';
 import { CanvasService } from '../canvas/services/canvas.service';
 import { Producto } from '../models/product';
 import { ProductoService } from '../services/producto.service';
 import { MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
+import { MatDialog } from '@angular/material/dialog';
+import { PrintConfig } from '../models/print-config';
+import { PrintDialogComponent } from '../dialogs/print-dialog/print-dialog.component';
 
 @Component({
   selector: 'app-header',
@@ -14,12 +17,16 @@ import { CommonModule } from '@angular/common';
 })
 export class HeaderComponent {
 
+  canvasWidth = 400; // valor inicial, puede venir de una constante
+  canvasHeight = 250;
+
   productos: Producto[] = [];
   productoSeleccionado: Producto | null = null;
 
   constructor(
     private canvasService: CanvasService,
-    private productoService: ProductoService
+    private productoService: ProductoService,
+    private dialog: MatDialog
   ) {
     this.cargarProductos();
   }
@@ -90,6 +97,40 @@ export class HeaderComponent {
 
   cargarEtiqueta() {
     this.canvasService.abrirFileInput();
+  }
+
+  cambiarTamanioEtiqueta(dim: { width: number, height: number }) {
+    this.canvasService.setCanvasSize(dim.width, dim.height);
+  }
+
+  abrirDialogoImpresion() {
+    const defaultConfig: PrintConfig = {
+      hoja: 'A4',
+    };
+
+    this.dialog.open(PrintDialogComponent, {
+      width: '500px',
+      data: defaultConfig
+    }).afterClosed().subscribe(result => {
+      if (result) {
+        const { action, config } = result;
+        if (action === 'preview') {
+          this.mostrarVistaPrevia(config);
+        } else if (action === 'print') {
+          this.imprimirEtiquetas(config);
+        }
+      }
+    });
+  }
+
+  mostrarVistaPrevia(config: PrintConfig) {
+    console.log('Mostrar vista previa con config:', config);
+    // Aquí va la lógica que genera y muestra la vista previa
+  }
+
+  imprimirEtiquetas(config: PrintConfig) {
+    console.log('Imprimir con config:', config);
+    // Aquí va la lógica que genera el PDF o llama a window.print()
   }
 
 }

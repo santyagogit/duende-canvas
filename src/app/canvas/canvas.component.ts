@@ -12,12 +12,15 @@ export class CanvasComponent implements AfterViewInit {
   @ViewChild('etiquetaCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   private canvas!: Canvas;
 
+  canvasWidth = 600;
+  canvasHeight = 350;
+
   constructor(private canvasService: CanvasService) { }
 
   ngAfterViewInit(): void {
     this.canvas = new Canvas(this.canvasRef.nativeElement, {
-      width: 400,
-      height: 200,
+      width: this.canvasWidth,
+      height: this.canvasHeight,
       selection: false,
       preserveObjectStacking: true,
     });

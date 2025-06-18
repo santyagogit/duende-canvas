@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { PrintConfig } from '../models/print-config';
 import { PrintDialogComponent } from '../dialogs/print-dialog/print-dialog.component';
+import { HojaSize, EtiquetaSize, PrintService } from '../services/print.service';
 
 @Component({
   selector: 'app-header',
@@ -17,16 +18,20 @@ import { PrintDialogComponent } from '../dialogs/print-dialog/print-dialog.compo
 })
 export class HeaderComponent {
 
-  canvasWidth = 400; // valor inicial, puede venir de una constante
-  canvasHeight = 250;
-
+  etiquetaSeleccionada: EtiquetaSize = { width: 400, height: 200 };
   productos: Producto[] = [];
   productoSeleccionado: Producto | null = null;
+
+  etiquetasParaVistaPrevia: { x: number; y: number }[] = [];
+  configActualHoja!: HojaSize;
+  mostrarPreview = false;
+  configActual!: PrintConfig;
 
   constructor(
     private canvasService: CanvasService,
     private productoService: ProductoService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private printService: PrintService
   ) {
     this.cargarProductos();
   }
@@ -99,13 +104,18 @@ export class HeaderComponent {
     this.canvasService.abrirFileInput();
   }
 
-  cambiarTamanioEtiqueta(dim: { width: number, height: number }) {
-    this.canvasService.setCanvasSize(dim.width, dim.height);
+  cambiarTamanioEtiqueta(size: EtiquetaSize) {
+    this.etiquetaSeleccionada = size;
+    console.log('Tamaño de etiqueta cambiado a:', size);
   }
 
   abrirDialogoImpresion() {
     const defaultConfig: PrintConfig = {
       hoja: 'A4',
+      etiquetaSize: {
+        width: this.etiquetaSeleccionada.width,
+        height: this.etiquetaSeleccionada.height
+      }
     };
 
     this.dialog.open(PrintDialogComponent, {
@@ -124,13 +134,48 @@ export class HeaderComponent {
   }
 
   mostrarVistaPrevia(config: PrintConfig) {
-    console.log('Mostrar vista previa con config:', config);
-    // Aquí va la lógica que genera y muestra la vista previa
+    this.configActual = { ...config };
+    this.etiquetaSeleccionada = config.etiquetaSize;
+
+    const hoja = this.printService.getHojaSize(config);
+    const distribucion = this.printService.calcularDistribucionImpresion(
+      hoja,
+      this.etiquetaSeleccionada
+    );
+
+    this.etiquetasParaVistaPrevia = distribucion.etiquetas;
+    this.configActualHoja = hoja;
+    this.mostrarPreview = true;
   }
+
 
   imprimirEtiquetas(config: PrintConfig) {
     console.log('Imprimir con config:', config);
-    // Aquí va la lógica que genera el PDF o llama a window.print()
+
+    // Actualizás el config si hace falta
+    this.configActual = config;
+
+    // Esperás un poquito para que se actualice la vista
+    setTimeout(() => {
+      window.print();
+    }, 100); // o incluso 200ms si notás que se renderiza lento
   }
+
+  getHojaSize(config: PrintConfig): HojaSize {
+    switch (config.hoja) {
+      case 'A4':
+        return { width: 210, height: 297 };
+      case 'Letter':
+        return { width: 216, height: 279 };
+      case 'personalizado':
+        return {
+          width: config.anchoPersonalizado ?? 210,
+          height: config.altoPersonalizado ?? 297
+        };
+      default:
+        return { width: 210, height: 297 };
+    }
+  }
+
 
 }

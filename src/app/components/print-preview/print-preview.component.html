@@ -1,0 +1,17 @@
+<div
+  class="hoja"
+  [style.width.mm]="hoja.width"
+  [style.height.mm]="hoja.height"
+  style="position: relative; border: 1px solid #ccc"
+>
+  @for (etiqueta of distribucion; track etiqueta) {
+  <div
+    class="etiqueta"
+    [style.left.mm]="etiqueta.x"
+    [style.top.mm]="etiqueta.y"
+    [style.width.mm]="etiquetaSizeMM.width"
+    [style.height.mm]="etiquetaSizeMM.height"
+    style="position: absolute; border: 1px dashed #000"
+  ></div>
+  }
+</div>

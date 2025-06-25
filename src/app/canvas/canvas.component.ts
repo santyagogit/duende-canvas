@@ -1,10 +1,11 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { Canvas, FabricObject } from 'fabric';
 import { CanvasService } from './services/canvas.service';
+import { NgStyle } from '@angular/common';
 
 @Component({
   selector: 'app-canvas',
-  imports: [],
+  imports: [NgStyle],
   templateUrl: './canvas.component.html',
   styleUrl: './canvas.component.scss'
 })

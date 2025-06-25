@@ -1,15 +1,14 @@
-import { Component, NgModule } from '@angular/core';
+import { Component } from '@angular/core';
 import { CanvasService } from '../canvas/services/canvas.service';
 import { Producto } from '../models/product';
 import { ProductoService } from '../services/producto.service';
 import { MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
-import { MatDialog } from '@angular/material/dialog';
 import { PrintConfig } from '../models/print-config';
-import { PrintDialogComponent } from '../dialogs/print-dialog/print-dialog.component';
 import { HojaSize, EtiquetaSize, PrintService } from '../services/print.service';
-
+import { PrintDialogComponent } from '../dialogs/print-dialog/print-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 @Component({
   selector: 'app-header',
   imports: [MatFormField, MatLabel, MatFormFieldModule, MatSelectModule, CommonModule],
@@ -23,15 +22,14 @@ export class HeaderComponent {
   productoSeleccionado: Producto | null = null;
 
   etiquetasParaVistaPrevia: { x: number; y: number }[] = [];
-  configActualHoja!: HojaSize;
-  mostrarPreview = false;
+  //configActualHoja!: HojaSize;
   configActual!: PrintConfig;
 
   constructor(
     private canvasService: CanvasService,
     private productoService: ProductoService,
-    private dialog: MatDialog,
-    private printService: PrintService
+    private printService: PrintService,
+    private dialog: MatDialog
   ) {
     this.cargarProductos();
   }
@@ -109,57 +107,19 @@ export class HeaderComponent {
     console.log('Tamaño de etiqueta cambiado a:', size);
   }
 
-  abrirDialogoImpresion() {
-    const defaultConfig: PrintConfig = {
-      hoja: 'A4',
-      etiquetaSize: {
-        width: this.etiquetaSeleccionada.width,
-        height: this.etiquetaSeleccionada.height
-      }
-    };
+  // mostrarVistaPrevia(config: PrintConfig) {
+  //   this.configActual = { ...config };
+  //   this.etiquetaSeleccionada = config.etiquetaSize;
 
-    this.dialog.open(PrintDialogComponent, {
-      width: '500px',
-      data: defaultConfig
-    }).afterClosed().subscribe(result => {
-      if (result) {
-        const { action, config } = result;
-        if (action === 'preview') {
-          this.mostrarVistaPrevia(config);
-        } else if (action === 'print') {
-          this.imprimirEtiquetas(config);
-        }
-      }
-    });
-  }
+  //   const hoja = this.printService.getHojaSize(config);
+  //   const distribucion = this.printService.calcularDistribucionImpresion(
+  //     hoja,
+  //     this.etiquetaSeleccionada
+  //   );
 
-  mostrarVistaPrevia(config: PrintConfig) {
-    this.configActual = { ...config };
-    this.etiquetaSeleccionada = config.etiquetaSize;
-
-    const hoja = this.printService.getHojaSize(config);
-    const distribucion = this.printService.calcularDistribucionImpresion(
-      hoja,
-      this.etiquetaSeleccionada
-    );
-
-    this.etiquetasParaVistaPrevia = distribucion.etiquetas;
-    this.configActualHoja = hoja;
-    this.mostrarPreview = true;
-  }
-
-
-  imprimirEtiquetas(config: PrintConfig) {
-    console.log('Imprimir con config:', config);
-
-    // Actualizás el config si hace falta
-    this.configActual = config;
-
-    // Esperás un poquito para que se actualice la vista
-    setTimeout(() => {
-      window.print();
-    }, 100); // o incluso 200ms si notás que se renderiza lento
-  }
+  //   this.etiquetasParaVistaPrevia = distribucion.etiquetas;
+  //   this.configActualHoja = hoja;
+  // }
 
   getHojaSize(config: PrintConfig): HojaSize {
     switch (config.hoja) {
@@ -177,5 +137,41 @@ export class HeaderComponent {
     }
   }
 
+  imprimirEtiquetas(config: PrintConfig) {
+    const url = this.canvasService.getEtiquetaDataURL();
+    const resultado = this.printService.calcularDistribucionImpresion(config, url);
+    this.etiquetasParaVistaPrevia = resultado.etiquetas;
 
+    setTimeout(() => window.print(), 0);
+  }
+
+  abrirDialogoImpresion() {
+    const dialogRef = this.dialog.open(PrintDialogComponent, {
+      data: {
+        hoja: 'A4',
+        etiquetaSize: { width: 200, height: 100 },
+        anchoPersonalizado: 600,
+        altoPersonalizado: 800
+      } satisfies PrintConfig
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) return;
+
+      const { action, config } = result;
+
+      // Generar imagen de la etiqueta actual desde el canvas
+      const etiquetaUrl = this.canvasService.getEtiquetaDataURL();
+
+      // Calcular la grilla de etiquetas
+      const distribucion = this.printService.calcularDistribucionImpresion(config, etiquetaUrl);
+
+      this.configActual = config;
+      this.etiquetasParaVistaPrevia = distribucion.etiquetas;
+
+      if (action === 'print') {
+        setTimeout(() => window.print(), 0); // permite que se renderice primero
+      }
+    });
+  }
 }

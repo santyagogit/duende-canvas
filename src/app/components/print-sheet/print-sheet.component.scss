@@ -1,0 +1,25 @@
+#area-impresion {
+  background: white;
+  margin: auto;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  padding: 0;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #area-impresion,
+  #area-impresion * {
+    visibility: visible;
+  }
+
+  #area-impresion {
+    position: absolute;
+    left: 0;
+    top: 0;
+    box-shadow: none;
+    margin: 0;
+  }
+}

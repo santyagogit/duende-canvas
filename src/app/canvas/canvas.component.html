@@ -1,6 +1,12 @@
-<canvas
-  id="canvas"
-  [attr.width]="canvasWidth"
-  [attr.height]="canvasHeight"
-  style="border: 2px dashed #333"
-></canvas>
+<div id="area-impresion">
+  <canvas
+    #etiquetaCanvas
+    [attr.width]="canvasWidth"
+    [attr.height]="canvasHeight"
+    style="border: 2px dashed #333"
+    [ngStyle]="{
+      width: canvasWidth + 'px',
+      height: canvasHeight + 'px'
+    }"
+  ></canvas>
+</div>

@@ -274,6 +274,11 @@ export class CanvasService {
     this.canvas.renderAll();
   }
 
-
+  getEtiquetaDataURL(): string {
+    return this.canvas.toDataURL({
+      format: 'png',
+      multiplier: 1  // asegura tamaño real
+    });
+  }
 
 }

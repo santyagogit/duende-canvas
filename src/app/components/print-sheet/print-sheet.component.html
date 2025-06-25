@@ -1,0 +1,21 @@
+<div
+  id="area-impresion"
+  class="hoja"
+  [ngStyle]="{
+    width: width + 'px',
+    height: height + 'px',
+    position: 'relative'
+  }"
+>
+  <img
+    *ngFor="let etiqueta of etiquetas"
+    [src]="etiqueta.url"
+    [ngStyle]="{
+      position: 'absolute',
+      left: etiqueta.x + 'px',
+      top: etiqueta.y + 'px',
+      width: config.etiquetaSize.width + 'px',
+      height: config.etiquetaSize.height + 'px'
+    }"
+  />
+</div>

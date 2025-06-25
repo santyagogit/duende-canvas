@@ -23,3 +23,23 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   src: url('assets/fonts/code128.ttf') format('truetype');
 }
 
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  #area-impresion,
+  #area-impresion * {
+    visibility: visible !important;
+  }
+
+  #area-impresion {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: auto;
+  }
+}
+
+

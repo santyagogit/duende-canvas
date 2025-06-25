@@ -26,10 +26,6 @@ export class PrintDialogComponent {
     this.dialogRef.close();
   }
 
-  onVistaPrevia() {
-    this.dialogRef.close({ action: 'preview', config: this.config });
-  }
-
   onImprimir() {
     this.dialogRef.close({ action: 'print', config: this.config });
   }

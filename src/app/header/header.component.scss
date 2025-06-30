@@ -1,52 +1,10 @@
-.editor-header {
-  width: 100vw;
-  background: linear-gradient(to right, #1976d2, #2196f3);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  color: white;
-}
-
-.editor-header .btn {
-  width: auto;
-  min-width: 140px;
-  border-radius: 6px;
-  font-weight: 500;
-}
-
-/* Hover */
-.editor-header .btn:hover {
-  background-color: #e0e0e0;
-}
-
-.editor-header .btn-danger:hover {
-  background-color: #c62828;
-  color: #fff;
-}
-
-/* Botones de acción */
-.btn-accion {
-  width: 200px; /* fijá el ancho deseado */
-  margin-bottom: 6px;
-}
-
-.btn-auto {
-  width: auto;
-  min-width: 160px;
-}
-
-/* El botón rojo se mantiene sin ancho fijo */
-.btn-danger {
-  min-width: auto;
-}
-
-/* Combo más ancho */
-mat-form-field.combo-productos {
-  width: 320px; /* o más, según lo que muestres */
-}
-
-
-/* Responsive spacing */
-@media (max-width: 576px) {
-  .editor-header .btn {
-    width: 100%;
+.print-sheet-container {
+  display: none; /* Siempre oculto en pantalla */
+  
+  /* Esto ya no es necesario:
+  @media print {
+    display: block;
+    ...
   }
+  */
 }

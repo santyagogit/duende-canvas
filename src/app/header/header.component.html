@@ -68,3 +68,25 @@
     </div>
   </div>
 </div>
+
+<div>
+  <mat-form-field appearance="fill">
+    <mat-label>Tamaño de Etiqueta</mat-label>
+    <mat-select
+      [(value)]="etiquetaSeleccionada"
+      (selectionChange)="cambiarTamanioEtiqueta($event.value)"
+    >
+      <mat-option [value]="{ width: 20, height: 10 }"> 20 x 10 cm </mat-option>
+      <mat-option [value]="{ width: 10, height: 5 }"> 10 x 5 cm </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+
+<!-- Al final del archivo, fuera del header visual -->
+<div class="print-sheet-container">
+  <app-print-sheet
+    *ngIf="etiquetasParaVistaPrevia.length"
+    [config]="configActual"
+    [etiquetas]="etiquetasParaVistaPrevia"
+  />
+</div>

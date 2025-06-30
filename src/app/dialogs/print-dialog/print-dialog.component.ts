@@ -19,14 +19,26 @@ export class PrintDialogComponent {
     private dialogRef: MatDialogRef<PrintDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: PrintConfig
   ) {
-    this.config = { ...data }; // Clonar la configuración inicial
+    this.config = { ...data };
   }
 
   onCancelar() {
     this.dialogRef.close();
   }
 
-  onImprimir() {
-    this.dialogRef.close({ action: 'print', config: this.config });
+  async onImprimir() {
+    this.dialogRef.close({
+      action: 'print',
+      config: this.config
+    });
+  }
+
+  mostrarEtiqueta(size: { width: number; height: number }): string {
+    return `${size.width} × ${size.height} px`;
+  }
+
+
+  pxToMm(px: number): number {
+    return +(px * 25.4 / 96).toFixed(1); // convención: 96px = 1in
   }
 }

@@ -1,21 +1,17 @@
 <div
   id="area-impresion"
-  class="hoja"
-  [ngStyle]="{
-    width: width + 'px',
-    height: height + 'px',
-    position: 'relative'
-  }"
+  [style.width.px]="width"
+  [style.height.px]="height"
+  style="background: white; margin: 20px auto; position: relative"
 >
+  @for (etiqueta of etiquetas; track $index) {
   <img
-    *ngFor="let etiqueta of etiquetas"
     [src]="etiqueta.url"
-    [ngStyle]="{
-      position: 'absolute',
-      left: etiqueta.x + 'px',
-      top: etiqueta.y + 'px',
-      width: config.etiquetaSize.width + 'px',
-      height: config.etiquetaSize.height + 'px'
-    }"
+    [style.width.px]="config.etiquetaSize.width"
+    [style.height.px]="config.etiquetaSize.height"
+    [style.left.px]="etiqueta.x"
+    [style.top.px]="etiqueta.y"
+    style="position: absolute"
   />
+  }
 </div>

@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { PrintConfig } from '../models/print-config';
 
 export interface HojaSize {
-  width: number; // mm
-  height: number; // mm
+  width: number; // cm
+  height: number; // cm
 }
 
 export interface EtiquetaSize {
@@ -22,53 +22,55 @@ export interface EtiquetaDistribuida {
 })
 export class PrintService {
 
-  private mmToPx(mm: number): number {
-    return (mm * 96) / 25.4;
+  cmToPx(cm: number): number {
+    return cm * 96 / 2.54;
   }
 
   getHojaSize(config: PrintConfig): HojaSize {
     switch (config.hoja) {
       case 'A4':
-        return { width: 210, height: 297 }; // mm
+        return { width: 21, height: 29.7 }; // cm
       case 'Letter':
-        return { width: 216, height: 279 }; // mm
+        return { width: 21.6, height: 27.9 }; // cm
       case 'personalizado':
         return {
-          width: config.anchoPersonalizado ?? 210,
-          height: config.altoPersonalizado ?? 297
+          width: config.anchoPersonalizado ?? 21,
+          height: config.altoPersonalizado ?? 29.7
         };
       default:
-        return { width: 210, height: 297 };
+        return { width: 21, height: 29.7 };
     }
   }
+
 
   calcularDistribucionImpresion(
     config: PrintConfig,
     etiquetaUrl: string
   ): { etiquetas: EtiquetaDistribuida[]; width: number; height: number } {
     const hojaSize = this.getHojaSize(config);
-    const hojaPxWidth = this.mmToPx(hojaSize.width);
-    const hojaPxHeight = this.mmToPx(hojaSize.height);
+    const hojaPxWidth = this.cmToPx(hojaSize.width);
+    const hojaPxHeight = this.cmToPx(hojaSize.height);
 
     const etiquetaWidth = config.etiquetaSize.width;
     const etiquetaHeight = config.etiquetaSize.height;
 
-    const margin = this.mmToPx(10); // margen fijo de 10mm
+    const margin = 0;
 
-    const cols = Math.floor((hojaPxWidth - 2 * margin) / etiquetaWidth);
-    const rows = Math.floor((hojaPxHeight - 2 * margin) / etiquetaHeight);
+    const cols = Math.floor(hojaPxWidth / etiquetaWidth);
+    const rows = Math.floor(hojaPxHeight / etiquetaHeight);
 
     const etiquetas: EtiquetaDistribuida[] = [];
 
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         etiquetas.push({
-          x: margin + c * etiquetaWidth,
-          y: margin + r * etiquetaHeight,
+          x: c * etiquetaWidth,
+          y: r * etiquetaHeight,
           url: etiquetaUrl
         });
       }
     }
+
 
     return {
       etiquetas,

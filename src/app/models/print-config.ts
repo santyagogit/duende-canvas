@@ -4,6 +4,6 @@ export interface PrintConfig {
         width: number; // px
         height: number; // px
     };
-    anchoPersonalizado?: number; // mm
-    altoPersonalizado?: number;  // mm
+    anchoPersonalizado?: number; // cm
+    altoPersonalizado?: number;  // cm
 }

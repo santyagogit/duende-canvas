@@ -9,9 +9,12 @@ import { PrintConfig } from '../models/print-config';
 import { HojaSize, EtiquetaSize, PrintService } from '../services/print.service';
 import { PrintDialogComponent } from '../dialogs/print-dialog/print-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { PrintSheetComponent } from '../components/print-sheet/print-sheet.component';
+import { FormsModule } from '@angular/forms';
+import { MatOptionModule } from '@angular/material/core';
 @Component({
   selector: 'app-header',
-  imports: [MatFormField, MatLabel, MatFormFieldModule, MatSelectModule, CommonModule],
+  imports: [MatOptionModule, MatFormField, MatLabel, MatFormFieldModule, MatSelectModule, CommonModule, PrintSheetComponent, FormsModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss'
 })
@@ -21,7 +24,7 @@ export class HeaderComponent {
   productos: Producto[] = [];
   productoSeleccionado: Producto | null = null;
 
-  etiquetasParaVistaPrevia: { x: number; y: number }[] = [];
+  etiquetasParaVistaPrevia: { x: number; y: number; url: string }[] = [];
   //configActualHoja!: HojaSize;
   configActual!: PrintConfig;
 
@@ -104,52 +107,39 @@ export class HeaderComponent {
 
   cambiarTamanioEtiqueta(size: EtiquetaSize) {
     this.etiquetaSeleccionada = size;
-    console.log('Tamaño de etiqueta cambiado a:', size);
+    this.canvasService.setCanvasSize(size.width, size.height);
   }
 
-  // mostrarVistaPrevia(config: PrintConfig) {
-  //   this.configActual = { ...config };
-  //   this.etiquetaSeleccionada = config.etiquetaSize;
+  async imprimirEtiquetas(config: PrintConfig) {
+    // 1. Obtener URL de la imagen
+    const etiquetaUrl = this.canvasService.getEtiquetaDataURL();
+    console.log('URL de imagen:', etiquetaUrl?.substring(0, 50) + '...'); // Verifica que la URL sea válida
 
-  //   const hoja = this.printService.getHojaSize(config);
-  //   const distribucion = this.printService.calcularDistribucionImpresion(
-  //     hoja,
-  //     this.etiquetaSeleccionada
-  //   );
+    // 2. Calcular distribución
+    this.configActual = config;
+    this.etiquetasParaVistaPrevia = this.printService.calcularDistribucionImpresion(config, etiquetaUrl).etiquetas;
 
-  //   this.etiquetasParaVistaPrevia = distribucion.etiquetas;
-  //   this.configActualHoja = hoja;
-  // }
+    // 3. Forzar actualización de vista
+    await new Promise(resolve => setTimeout(resolve, 50));
 
-  getHojaSize(config: PrintConfig): HojaSize {
-    switch (config.hoja) {
-      case 'A4':
-        return { width: 210, height: 297 };
-      case 'Letter':
-        return { width: 216, height: 279 };
-      case 'personalizado':
-        return {
-          width: config.anchoPersonalizado ?? 210,
-          height: config.altoPersonalizado ?? 297
-        };
-      default:
-        return { width: 210, height: 297 };
-    }
-  }
+    // 4. Verificar en el DOM
+    const areaImpresion = document.querySelector('#area-impresion');
+    console.log('Área impresión:', areaImpresion);
 
-  imprimirEtiquetas(config: PrintConfig) {
-    const url = this.canvasService.getEtiquetaDataURL();
-    const resultado = this.printService.calcularDistribucionImpresion(config, url);
-    this.etiquetasParaVistaPrevia = resultado.etiquetas;
-
-    setTimeout(() => window.print(), 0);
+    // 5. Imprimir
+    setTimeout(() => {
+      window.print();
+    }, 100);
   }
 
   abrirDialogoImpresion() {
     const dialogRef = this.dialog.open(PrintDialogComponent, {
       data: {
         hoja: 'A4',
-        etiquetaSize: { width: 200, height: 100 },
+        etiquetaSize: {
+          width: 400,
+          height: 200
+        },
         anchoPersonalizado: 600,
         altoPersonalizado: 800
       } satisfies PrintConfig
@@ -160,18 +150,16 @@ export class HeaderComponent {
 
       const { action, config } = result;
 
-      // Generar imagen de la etiqueta actual desde el canvas
-      const etiquetaUrl = this.canvasService.getEtiquetaDataURL();
-
-      // Calcular la grilla de etiquetas
-      const distribucion = this.printService.calcularDistribucionImpresion(config, etiquetaUrl);
-
-      this.configActual = config;
-      this.etiquetasParaVistaPrevia = distribucion.etiquetas;
+      // Importante: agregás el tamaño de etiqueta ya seleccionado
+      config.etiquetaSize = this.etiquetaSeleccionada;
 
       if (action === 'print') {
-        setTimeout(() => window.print(), 0); // permite que se renderice primero
+        this.imprimirEtiquetas(config);
       }
     });
+  }
+
+  cmToPx(cm: number): number {
+    return this.printService.cmToPx(cm);
   }
 }

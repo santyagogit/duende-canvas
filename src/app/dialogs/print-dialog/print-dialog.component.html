@@ -3,36 +3,29 @@
   <mat-form-field appearance="fill">
     <mat-label>Tamaño de hoja</mat-label>
     <mat-select [(value)]="config.hoja">
-      <mat-option value="a4">A4</mat-option>
-      <mat-option value="letter">Letter</mat-option>
+      <mat-option value="A4">A4</mat-option>
+      <mat-option value="Letter">Letter</mat-option>
       <mat-option value="personalizado">Personalizado</mat-option>
-    </mat-select>
-  </mat-form-field>
-
-  <mat-form-field appearance="fill">
-    <mat-label>Tamaño de Etiqueta</mat-label>
-    <mat-select [(ngModel)]="config.etiquetaSize">
-      <mat-option [value]="{ width: 200, height: 100 }"
-        >200 x 100 px</mat-option
-      >
-      <mat-option [value]="{ width: 300, height: 150 }"
-        >300 x 150 px</mat-option
-      >
-      <mat-option [value]="{ width: 400, height: 200 }"
-        >400 x 200 px</mat-option
-      >
     </mat-select>
   </mat-form-field>
 
   <div *ngIf="config.hoja === 'personalizado'" class="d-flex gap-2">
     <mat-form-field>
-      <mat-label>Ancho (mm)</mat-label>
+      <mat-label>Ancho (cm)</mat-label>
       <input matInput [(ngModel)]="config.anchoPersonalizado" type="number" />
     </mat-form-field>
     <mat-form-field>
-      <mat-label>Alto (mm)</mat-label>
+      <mat-label>Alto (cm)</mat-label>
       <input matInput [(ngModel)]="config.altoPersonalizado" type="number" />
     </mat-form-field>
+  </div>
+
+  <div class="d-flex flex-column">
+    <label class="fw-bold">Tamaño de Etiqueta</label>
+    <span
+      >{{ config.etiquetaSize.width }} ×
+      {{ config.etiquetaSize.height }} px</span
+    >
   </div>
 </mat-dialog-content>
 

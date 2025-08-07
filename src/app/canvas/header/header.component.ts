@@ -1,25 +1,42 @@
-import { Component } from '@angular/core';
-import { CanvasService } from '../canvas/services/canvas.service';
-import { Producto } from '../models/product';
-import { ProductoService } from '../services/producto.service';
-import { MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
+import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
+import { CanvasService } from '../services/canvas.service';
+import { Producto } from '../../models/product';
+import { ProductoService } from '../../services/producto.service';
+import {
+  MatFormField,
+  MatFormFieldModule,
+  MatLabel,
+} from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
-import { PrintConfig } from '../models/print-config';
-import { HojaSize, EtiquetaSize, PrintService } from '../services/print.service';
-import { PrintDialogComponent } from '../dialogs/print-dialog/print-dialog.component';
+import { PrintConfig } from '../../models/print-config';
+import {
+  HojaSize,
+  EtiquetaSize,
+  PrintService,
+} from '../../services/print.service';
+import { PrintDialogComponent } from '../../dialogs/print-dialog/print-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { PrintSheetComponent } from '../components/print-sheet/print-sheet.component';
+import { PrintSheetComponent } from '../../components/print-sheet/print-sheet.component';
 import { FormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
+import { AppComponent } from '../../app.component';
 @Component({
   selector: 'app-header',
-  imports: [MatOptionModule, MatFormField, MatLabel, MatFormFieldModule, MatSelectModule, CommonModule, PrintSheetComponent, FormsModule],
+  imports: [
+    MatOptionModule,
+    MatFormField,
+    MatLabel,
+    MatFormFieldModule,
+    MatSelectModule,
+    CommonModule,
+    PrintSheetComponent,
+    FormsModule,
+  ],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+  styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
-
   etiquetaSeleccionada: EtiquetaSize = { width: 400, height: 200 };
   productos: Producto[] = [];
   productoSeleccionado: Producto | null = null;
@@ -27,6 +44,10 @@ export class HeaderComponent {
   etiquetasParaVistaPrevia: { x: number; y: number; url: string }[] = [];
   //configActualHoja!: HojaSize;
   configActual!: PrintConfig;
+
+  mostrarVistaPrevia = false;
+
+  @Output() modoVistaPrevia = new EventEmitter<boolean>();
 
   constructor(
     private canvasService: CanvasService,
@@ -38,9 +59,10 @@ export class HeaderComponent {
   }
 
   cargarProductos() {
-    this.productoService.getProducts().subscribe(productos => {
+    this.productoService.getProducts().subscribe((productos) => {
       this.productos = productos;
-      this.productoSeleccionado = this.productos.length > 0 ? this.productos[0] : null;
+      this.productoSeleccionado =
+        this.productos.length > 0 ? this.productos[0] : null;
       if (this.productoSeleccionado) {
         this.seleccionarProducto(this.productoSeleccionado);
       }
@@ -100,7 +122,6 @@ export class HeaderComponent {
     this.canvasService.guardarComoJSON();
   }
 
-
   cargarEtiqueta() {
     this.canvasService.abrirFileInput();
   }
@@ -117,10 +138,21 @@ export class HeaderComponent {
 
     // 2. Calcular distribución
     this.configActual = config;
-    this.etiquetasParaVistaPrevia = this.printService.calcularDistribucionImpresion(config, etiquetaUrl).etiquetas;
+    const distribucion = this.printService.calcularDistribucionImpresion(
+      config,
+      etiquetaUrl
+    );
+
+    console.log(
+      'Cantidad de etiquetas generadas:',
+      distribucion.etiquetas.length
+    );
+    console.table(distribucion.etiquetas);
+
+    this.etiquetasParaVistaPrevia = distribucion.etiquetas;
 
     // 3. Forzar actualización de vista
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     // 4. Verificar en el DOM
     const areaImpresion = document.querySelector('#area-impresion');
@@ -132,20 +164,40 @@ export class HeaderComponent {
     }, 100);
   }
 
+  abrirVistaPrevia(config: PrintConfig) {
+    this.modoVistaPrevia.emit(true);
+
+    const etiquetaUrl = this.canvasService.getEtiquetaDataURL();
+    const distribucion = this.printService.calcularDistribucionImpresion(
+      config,
+      etiquetaUrl
+    );
+
+    console.log('Distribución generada:', distribucion.etiquetas.length);
+
+    this.configActual = config;
+    this.etiquetasParaVistaPrevia = distribucion.etiquetas;
+    this.mostrarVistaPrevia = true;
+  }
+
+  imprimir() {
+    setTimeout(() => window.print(), 0);
+  }
+
   abrirDialogoImpresion() {
     const dialogRef = this.dialog.open(PrintDialogComponent, {
       data: {
         hoja: 'A4',
         etiquetaSize: {
           width: 400,
-          height: 200
+          height: 200,
         },
         anchoPersonalizado: 600,
-        altoPersonalizado: 800
-      } satisfies PrintConfig
+        altoPersonalizado: 800,
+      } satisfies PrintConfig,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (!result) return;
 
       const { action, config } = result;
@@ -154,12 +206,17 @@ export class HeaderComponent {
       config.etiquetaSize = this.etiquetaSeleccionada;
 
       if (action === 'print') {
-        this.imprimirEtiquetas(config);
+        this.abrirVistaPrevia(config);
       }
     });
   }
 
   cmToPx(cm: number): number {
     return this.printService.cmToPx(cm);
+  }
+
+  volverAlEditor(): void {
+    this.mostrarVistaPrevia = false;
+    this.modoVistaPrevia.emit(false);
   }
 }

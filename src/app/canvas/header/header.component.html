@@ -1,0 +1,86 @@
+<ng-container *ngIf="!mostrarVistaPrevia">
+  <div class="container-fluid py-2 px-4 text-white fw-bold fs-5">
+    Editor de Etiquetas
+  </div>
+
+
+  <div class="container-fluid px-4 py-2">
+    <div class="row">
+      <!-- Columna 1 -->
+      <div class="col-md-3 d-flex flex-column gap-2 align-items-start">
+        <button class="btn btn-warning btn-accion" (click)="limpiarCanvas()">
+          Limpiar etiqueta
+        </button>
+        <button class="btn btn-danger btn-accion" (click)="eliminarSeleccion()">
+          Eliminar seleccionado
+        </button>
+        <div style="height: 38px"></div>
+      </div>
+
+      <!-- Columna 2 -->
+      <div class="col-md-3 d-flex flex-column gap-2 align-items-start">
+        <button class="btn btn-light btn-accion" (click)="insertarTexto()">
+          Insertar texto
+        </button>
+        <button class="btn btn-light btn-accion" (click)="insertarImagen()">
+          Insertar imagen
+        </button>
+        <button class="btn btn-light btn-accion" (click)="agregarCampo('ID')">
+          Agregar ID
+        </button>
+        <button class="btn btn-light btn-accion" (click)="agregarCampo('NOMBRE')">
+          Agregar Nombre
+        </button>
+        <button class="btn btn-light btn-accion" (click)="agregarCampo('PUNIT')">
+          Agregar Precio
+        </button>
+      </div>
+
+      <!-- Columna 3 -->
+      <div class="col-md-4 d-flex flex-column gap-2 align-items-start">
+        <mat-form-field appearance="fill" class="combo-productos w-100">
+          <mat-label>Producto</mat-label>
+          <mat-select (selectionChange)="seleccionarProducto($event.value)" placeholder="Seleccionar producto">
+            <mat-option *ngFor="let producto of productos" [value]="producto">
+              {{ producto.id }} - {{ producto.nombre }} (${{ producto.precio }})
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Columna 4 -->
+      <div class="col-md-2 d-flex flex-column gap-2 align-items-start">
+        <button class="btn btn-light btn-accion" (click)="guardarEtiqueta()">
+          Guardar etiqueta
+        </button>
+        <button class="btn btn-light btn-accion" (click)="cargarEtiqueta()">
+          Cargar etiqueta
+        </button>
+      </div>
+      <div>
+        <button class="btn btn-primary btn-accion" (click)="abrirDialogoImpresion()">
+          Imprimir Etiquetas
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <mat-form-field appearance="fill">
+      <mat-label>Tamaño de Etiqueta</mat-label>
+      <mat-select [(value)]="etiquetaSeleccionada" (selectionChange)="cambiarTamanioEtiqueta($event.value)">
+        <mat-option [value]="{ width: cmToPx(20), height: cmToPx(10) }"> 20 x 10 cm </mat-option>
+        <mat-option [value]="{ width: cmToPx(10), height: cmToPx(5) }"> 10 x 5 cm </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="mostrarVistaPrevia">
+  <app-print-sheet [config]="configActual" [etiquetas]="etiquetasParaVistaPrevia"></app-print-sheet>
+
+  <div class="text-center my-3">
+    <button mat-raised-button color="primary" (click)="imprimir()">Imprimir</button>
+    <button mat-button (click)="volverAlEditor()">Volver</button>
+  </div>
+</ng-container>

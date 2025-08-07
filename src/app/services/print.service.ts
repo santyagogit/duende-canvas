@@ -70,6 +70,8 @@ export class PrintService {
         });
       }
     }
+    console.log('Distribución generada:', etiquetas.length);
+
 
 
     return {

@@ -1,13 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { CanvasComponent } from './canvas/canvas.component';
-import { HeaderComponent } from './header/header.component';
+import { HeaderComponent } from './canvas/header/header.component';
+import { CommonModule } from '@angular/common';
+import { CanvasService } from './canvas/services/canvas.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [CanvasComponent, HeaderComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
-export class AppComponent {
-  title = 'duende-canvas';
-}
+export class AppComponent {}
+
+// mostrarCanvas = true;
+
+// refrescarCanvas() {
+//   this.canvasService.refrescarCanvas();
+// }

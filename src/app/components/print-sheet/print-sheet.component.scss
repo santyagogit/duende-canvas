@@ -1,5 +1,15 @@
+.etiqueta-borde {
+  position: absolute;
+  border: 1px dotted #000;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
 /* Solo estilos para vista normal (opcional) */
 #area-impresion {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  margin-bottom: 20px; /* Solo para vista previa en pantalla */
+  margin-bottom: 20px;
+  /* Solo para vista previa en pantalla */
 }

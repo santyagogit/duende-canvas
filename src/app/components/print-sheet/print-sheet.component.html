@@ -1,17 +1,7 @@
-<div
-  id="area-impresion"
-  [style.width.px]="width"
-  [style.height.px]="height"
-  style="background: white; margin: 20px auto; position: relative"
->
+<div id="area-impresion" [style.width.px]="width" [style.height.px]="height"
+  style="background: white; margin: 20px auto; position: relative">
   @for (etiqueta of etiquetas; track $index) {
-  <img
-    [src]="etiqueta.url"
-    [style.width.px]="config.etiquetaSize.width"
-    [style.height.px]="config.etiquetaSize.height"
-    [style.left.px]="etiqueta.x"
-    [style.top.px]="etiqueta.y"
-    style="position: absolute"
-  />
+  <img [src]="etiqueta.url" [style.width.px]="config.etiquetaSize.width" [style.height.px]="config.etiquetaSize.height"
+    [style.left.px]="etiqueta.x" [style.top.px]="etiqueta.y" style="position: absolute" class="etiqueta-borde" />
   }
 </div>

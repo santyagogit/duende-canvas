@@ -1,17 +1,19 @@
 import { Component, Input } from '@angular/core';
 import { PrintConfig } from '../../models/print-config';
 import { PrintService } from '../../services/print.service';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-print-sheet',
   templateUrl: './print-sheet.component.html',
   styleUrls: ['./print-sheet.component.scss'],
+  imports: [MatDialogModule],
 })
 export class PrintSheetComponent {
   @Input() config!: PrintConfig;
   @Input() etiquetas: { x: number; y: number; url: string }[] = [];
 
-  constructor(private printService: PrintService) { }
+  constructor(private printService: PrintService, private dialog: MatDialog) { }
 
   get width(): number {
     if (this.config.hoja === 'A4') return this.cmToPx(21);
@@ -27,5 +29,13 @@ export class PrintSheetComponent {
 
   cmToPx(cm: number): number {
     return this.printService.cmToPx(cm);
+  }
+
+  imprimir() {
+    setTimeout(() => window.print(), 0);
+  }
+
+  onCancelar() {
+    this.dialog.closeAll();
   }
 }

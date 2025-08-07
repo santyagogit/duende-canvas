@@ -281,4 +281,8 @@ export class CanvasService {
     });
   }
 
+  public refrescarCanvas(): void {
+    this.canvas?.renderAll();
+  }
+
 }

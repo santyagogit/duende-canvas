@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { CanvasService } from '../services/canvas.service';
-import { HeaderComponent } from '../header/header.component';
-import { CanvasComponent } from '../canvas.component';
+import { CanvasService } from '../editor-etiquetas/services/canvas.service';
+import { HeaderComponent } from '../editor-etiquetas/components/header/header.component';
+import { CanvasComponent } from '../editor-etiquetas/components/canvas/canvas.component';
 
 @Component({
   selector: 'app-editor-etiquetas',
-  imports: [HeaderComponent, CanvasComponent],
+  imports: [CanvasComponent, HeaderComponent],
   templateUrl: './editor-etiquetas.component.html',
   styleUrl: './editor-etiquetas.component.scss',
 })

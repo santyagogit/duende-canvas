@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { EditorEtiquetasComponent } from './canvas/editor-etiquetas/editor-etiquetas.component';
-import { ProductosComponent } from './productos/productos.component';
+import { EditorEtiquetasComponent } from './features/editor-etiquetas//editor-etiquetas.component';
+import { ProductosComponent } from './features/productos/productos.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'editor', pathMatch: 'full' },

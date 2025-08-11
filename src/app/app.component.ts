@@ -1,13 +1,14 @@
 import { Component, ViewChild } from '@angular/core';
-import { CanvasComponent } from './canvas/canvas.component';
-import { HeaderComponent } from './canvas/header/header.component';
+import { CanvasComponent } from './features/editor-etiquetas/components/canvas/canvas.component';
+import { HeaderComponent } from './features/editor-etiquetas/components/header/header.component';
 import { CommonModule } from '@angular/common';
-import { CanvasService } from './canvas/services/canvas.service';
+import { CanvasService } from './features/editor-etiquetas/services/canvas.service';
 import { RouterModule } from '@angular/router';
+import { TopNavComponent } from './shared/components/top-nav/top-nav.component';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TopNavComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })

@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
-import { CanvasService } from '../services/canvas.service';
-import { Producto } from '../../models/product';
-import { ProductoService } from '../../services/producto.service';
+import { CanvasService } from '../../services/canvas.service';
+import { Producto } from '../../../../core/models/product';
+import { ProductoService } from '../../../productos/services/producto.service';
 import {
   MatFormField,
   MatFormFieldModule,
@@ -9,18 +9,18 @@ import {
 } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
-import { PrintConfig } from '../../models/print-config';
+import { PrintConfig } from '../../../../core/models/print-config';
 import {
   HojaSize,
   EtiquetaSize,
   PrintService,
-} from '../../services/print.service';
-import { PrintDialogComponent } from '../../dialogs/print-dialog/print-dialog.component';
+} from '../../../../core/services/print.service';
+import { PrintDialogComponent } from '../../../../dialogs/print-dialog/print-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { PrintSheetComponent } from '../../components/print-sheet/print-sheet.component';
+import { PrintSheetComponent } from '../print-sheet/print-sheet.component';
 import { FormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
-import { AppComponent } from '../../app.component';
+import { AppComponent } from '../../../../app.component';
 @Component({
   selector: 'app-header',
   imports: [

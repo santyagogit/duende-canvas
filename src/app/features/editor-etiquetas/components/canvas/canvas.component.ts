@@ -1,22 +1,23 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { Canvas, FabricObject } from 'fabric';
-import { CanvasService } from './services/canvas.service';
+import { CanvasService } from '../../services/canvas.service';
 import { NgStyle } from '@angular/common';
 
 @Component({
   selector: 'app-canvas',
   imports: [NgStyle],
   templateUrl: './canvas.component.html',
-  styleUrl: './canvas.component.scss'
+  styleUrl: './canvas.component.scss',
 })
 export class CanvasComponent implements AfterViewInit {
-  @ViewChild('etiquetaCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('etiquetaCanvas', { static: true })
+  canvasRef!: ElementRef<HTMLCanvasElement>;
   private canvas!: Canvas;
 
   canvasWidth = 600;
   canvasHeight = 350;
 
-  constructor(private canvasService: CanvasService) { }
+  constructor(private canvasService: CanvasService) {}
 
   ngAfterViewInit(): void {
     this.canvas = new Canvas(this.canvasRef.nativeElement, {
@@ -52,6 +53,5 @@ export class CanvasComponent implements AfterViewInit {
         this.canvasService.makeObjectEditable(target as FabricObject);
       }
     });
-
   }
 }

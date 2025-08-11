@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Canvas, FabricImage, FabricObject, Textbox } from 'fabric';
-import { InsertImageDialogComponent } from '../../dialogs/insert-image-dialog/insert-image-dialog.component';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
+import { InsertImageDialogComponent } from '../../../dialogs/insert-image-dialog/insert-image-dialog.component';
+import { ConfirmDialogComponent } from '../../../dialogs/confirm-dialog/confirm-dialog.component';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CanvasService {
   private canvas!: Canvas;
 
-  constructor(private dialog: MatDialog) { }
+  constructor(private dialog: MatDialog) {}
 
   setCanvas(canvas: Canvas) {
     this.canvas = canvas;
@@ -33,15 +33,21 @@ export class CanvasService {
     this.redondearControlRotacion(obj);
   }
 
-
   // Método para redondear el control de rotación
   public redondearControlRotacion(obj: FabricObject) {
     if (!obj.controls || !obj.controls['mtr']) return;
 
     obj.controls['mtr'].offsetY = -20;
 
-    obj.controls['mtr'].render = function (ctx, left, top, styleOverride, fabricObject) {
-      const size = (styleOverride?.cornerSize ?? (this as any)['cornerSize']) || 12;
+    obj.controls['mtr'].render = function (
+      ctx,
+      left,
+      top,
+      styleOverride,
+      fabricObject
+    ) {
+      const size =
+        (styleOverride?.cornerSize ?? (this as any)['cornerSize']) || 12;
 
       ctx.save();
       ctx.beginPath();
@@ -52,12 +58,16 @@ export class CanvasService {
       ctx.strokeStyle = 'black';
       ctx.stroke();
       ctx.restore();
-    }
+    };
     this.canvas.renderAll(); // Redibuja el canvas
   }
 
   // Metodo para insertar texto
-  async insertarTexto(texto: string, fontFamily: string = 'Arial', opcionesExtra: Partial<Textbox> = {}) {
+  async insertarTexto(
+    texto: string,
+    fontFamily: string = 'Arial',
+    opcionesExtra: Partial<Textbox> = {}
+  ) {
     await (document as any).fonts.load(`18px "${fontFamily}"`);
 
     const text = new Textbox(texto, {
@@ -67,7 +77,7 @@ export class CanvasService {
       fontFamily: fontFamily,
       editable: true,
       fill: '#000',
-      ...opcionesExtra // Permite pasar estilos adicionales
+      ...opcionesExtra, // Permite pasar estilos adicionales
     });
 
     this.aplicarEstilosPorDefecto?.(text);
@@ -77,8 +87,6 @@ export class CanvasService {
     this.canvas.setActiveObject(text);
     this.canvas.renderAll();
   }
-
-
 
   makeObjectEditable(object: FabricObject) {
     if (!object) return;
@@ -169,7 +177,6 @@ export class CanvasService {
   }
 
   guardarComoJSON() {
-
     const data = {
       width: this.canvas.getWidth(),
       height: this.canvas.getHeight(),
@@ -205,10 +212,10 @@ export class CanvasService {
 
     await (document as any).fonts.ready;
 
-    this.canvas.getObjects().forEach(obj => obj.setCoords());
+    this.canvas.getObjects().forEach((obj) => obj.setCoords());
     this.canvas.renderAll();
 
-    this.canvas.getObjects().forEach(obj => {
+    this.canvas.getObjects().forEach((obj) => {
       this.aplicarEstilosPorDefecto(obj);
       this.redondearControlRotacion(obj);
     });
@@ -219,13 +226,13 @@ export class CanvasService {
       width: '300px',
       data: {
         title: 'Confirmación',
-        message: '¿Seguro que querés borrar todo el contenido del canvas?'
-      }
+        message: '¿Seguro que querés borrar todo el contenido del canvas?',
+      },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
-        this.canvas.getObjects().forEach(obj => this.canvas.remove(obj));
+        this.canvas.getObjects().forEach((obj) => this.canvas.remove(obj));
         this.canvas.renderAll();
       }
     });
@@ -277,12 +284,11 @@ export class CanvasService {
   getEtiquetaDataURL(): string {
     return this.canvas.toDataURL({
       format: 'png',
-      multiplier: 1  // asegura tamaño real
+      multiplier: 1, // asegura tamaño real
     });
   }
 
   public refrescarCanvas(): void {
     this.canvas?.renderAll();
   }
-
 }

@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { Producto } from '../models/product';
+import { Producto } from '../../../core/models/product';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProductoService {
   private productoSeleccionado = new BehaviorSubject<Producto | null>(null);
@@ -20,8 +20,8 @@ export class ProductoService {
   getProducts(): Observable<Producto[]> {
     const productosMock: Producto[] = [
       { id: '123456789', nombre: 'Producto A', precio: 10.99 },
-      { id: '987654321', nombre: 'Producto B', precio: 24.50 },
-      { id: '456789123', nombre: 'Producto C', precio: 15.00 }
+      { id: '987654321', nombre: 'Producto B', precio: 24.5 },
+      { id: '456789123', nombre: 'Producto C', precio: 15.0 },
     ];
     return of(productosMock);
   }

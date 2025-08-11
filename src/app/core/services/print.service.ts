@@ -18,12 +18,11 @@ export interface EtiquetaDistribuida {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PrintService {
-
   cmToPx(cm: number): number {
-    return cm * 96 / 2.54;
+    return (cm * 96) / 2.54;
   }
 
   getHojaSize(config: PrintConfig): HojaSize {
@@ -35,13 +34,12 @@ export class PrintService {
       case 'personalizado':
         return {
           width: config.anchoPersonalizado ?? 21,
-          height: config.altoPersonalizado ?? 29.7
+          height: config.altoPersonalizado ?? 29.7,
         };
       default:
         return { width: 21, height: 29.7 };
     }
   }
-
 
   calcularDistribucionImpresion(
     config: PrintConfig,
@@ -66,19 +64,16 @@ export class PrintService {
         etiquetas.push({
           x: c * etiquetaWidth,
           y: r * etiquetaHeight,
-          url: etiquetaUrl
+          url: etiquetaUrl,
         });
       }
     }
     console.log('Distribución generada:', etiquetas.length);
 
-
-
     return {
       etiquetas,
       width: hojaPxWidth,
-      height: hojaPxHeight
+      height: hojaPxHeight,
     };
   }
 }
-

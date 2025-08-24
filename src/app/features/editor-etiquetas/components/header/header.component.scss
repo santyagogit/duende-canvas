@@ -1,10 +1,121 @@
-.print-sheet-container {
-  display: none; /* Siempre oculto en pantalla */
-  
-  /* Esto ya no es necesario:
-  @media print {
-    display: block;
-    ...
+:host {
+  display: block;
+  width: 100%;
+}
+
+.container-fluid {
+  background: transparent;
+  margin-bottom: 0;
+}
+
+.py-2.px-4.text-white.fw-bold.fs-5 {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem 2rem !important;
+  border-radius: 0;
+  font-weight: 700;
+  font-size: 1.5rem !important;
+  letter-spacing: 0.5px;
+  text-align: center;
+  margin: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.px-4.py-2 {
+  padding: 2rem !important;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.btn-accion {
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  min-width: 140px;
+  text-align: center;
+  letter-spacing: 0.3px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   }
-  */
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%);
+  color: white;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  color: white;
+}
+
+.btn-light {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #2c3e50;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.combo-productos {
+  .mat-mdc-form-field {
+    width: 100%;
+  }
+
+  .mat-mdc-form-field-focus-overlay {
+    background-color: transparent;
+  }
+
+  .mat-mdc-text-field-wrapper {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .mat-mdc-form-field-focus-overlay {
+    background-color: transparent;
+  }
+}
+
+mat-form-field {
+  .mat-mdc-form-field-wrapper {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 0.5rem;
+  }
+
+  .mat-mdc-form-field-focus-overlay {
+    background-color: transparent;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .px-4.py-2 {
+    padding: 1rem !important;
+  }
+
+  .py-2.px-4.text-white.fw-bold.fs-5 {
+    padding: 1rem !important;
+    font-size: 1.2rem !important;
+  }
+
+  .btn-accion {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    min-width: 120px;
+  }
 }

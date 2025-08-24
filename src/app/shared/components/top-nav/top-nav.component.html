@@ -1,4 +1,16 @@
-<mat-toolbar color="primary" class="top-nav">
-  <span class="nav-link" routerLink="/editor">Etiquetas</span>
-  <span class="nav-link" routerLink="/productos">Productos</span>
-</mat-toolbar>
+<nav class="top-nav">
+  <div class="nav-left">
+    <button class="nav-button" (click)="guardarEtiqueta()">
+      <span class="button-icon">💾</span>
+      Guardar Etiqueta
+    </button>
+    <button class="nav-button" (click)="cargarEtiqueta()">
+      <span class="button-icon">📁</span>
+      Cargar Etiqueta
+    </button>
+  </div>
+  <div class="nav-center">
+    <a routerLink="/editor" class="nav-link">Etiquetas</a>
+    <a routerLink="/productos" class="nav-link">Productos</a>
+  </div>
+</nav>

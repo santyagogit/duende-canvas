@@ -1,0 +1,219 @@
+.productos-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 80%;
+    margin: 70px auto 0;
+    padding: 2rem;
+    background: transparent;
+}
+
+.header-wrapper {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.header {
+    text-align: center;
+    padding: 1.5rem 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    h1 {
+        color: white;
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+}
+
+.content-wrapper {
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 500px;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+
+    p {
+        margin-top: 1.5rem;
+        color: #7f8c8d;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+}
+
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    text-align: center;
+
+    .error-icon {
+        font-size: 4rem;
+        color: #e74c3c;
+        margin-bottom: 1.5rem;
+    }
+
+    h3 {
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    p {
+        color: #7f8c8d;
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+    }
+}
+
+.table-container {
+    background: transparent;
+    overflow: hidden;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.table-header {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.search-field {
+    width: 300px;
+    max-width: 100%;
+}
+
+.products-table {
+    width: 100%;
+    background: transparent;
+    table-layout: fixed;
+}
+
+.product-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background-color: rgba(102, 126, 234, 0.1);
+    }
+
+    .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+    }
+
+    .mat-mdc-icon-button {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+    }
+}
+
+.mat-mdc-header-cell {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    padding: 0.75rem 0.5rem;
+}
+
+.mat-mdc-header-cell:nth-child(1) {
+    /* ID */
+    width: 120px;
+}
+
+.mat-mdc-header-cell:nth-child(2) {
+    /* Nombre */
+    width: 200px;
+}
+
+.mat-mdc-header-cell:nth-child(3) {
+    /* Precio */
+    width: 100px;
+}
+
+.mat-mdc-header-cell:nth-child(4) {
+    /* Descripción */
+    width: 300px;
+}
+
+.mat-mdc-header-cell:nth-child(5) {
+    /* Acciones */
+    width: 150px;
+}
+
+.mat-mdc-cell {
+    padding: 0.5rem 0.5rem;
+    border-bottom: 1px solid #e9ecef;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mat-mdc-cell:nth-child(4) {
+    /* Descripción */
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+
+.mat-mdc-paginator {
+    background: transparent;
+    border-top: 1px solid #e9ecef;
+    min-height: 48px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .productos-container {
+        margin: 60px auto 0;
+        padding: 1rem;
+        width: 95%;
+    }
+
+    .content-wrapper {
+        padding: 1rem;
+        min-height: 400px;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    .header {
+        padding: 1rem 2rem;
+
+        h1 {
+            font-size: 1.2rem;
+        }
+    }
+
+    .table-container {
+        overflow-x: auto;
+        max-width: 100%;
+    }
+
+    .products-table {
+        min-width: 800px;
+    }
+}

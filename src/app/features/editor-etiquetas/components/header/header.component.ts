@@ -20,7 +20,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { PrintSheetComponent } from '../print-sheet/print-sheet.component';
 import { FormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
+import { MatButtonModule } from '@angular/material/button';
 import { AppComponent } from '../../../../app.component';
+
 @Component({
   selector: 'app-header',
   imports: [
@@ -29,6 +31,7 @@ import { AppComponent } from '../../../../app.component';
     MatLabel,
     MatFormFieldModule,
     MatSelectModule,
+    MatButtonModule,
     CommonModule,
     PrintSheetComponent,
     FormsModule,

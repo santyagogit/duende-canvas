@@ -12,7 +12,7 @@ import { CanvasComponent } from '../editor-etiquetas/components/canvas/canvas.co
 export class EditorEtiquetasComponent {
   mostrarCanvas = true;
 
-  constructor(private canvasService: CanvasService) {}
+  constructor(private canvasService: CanvasService) { }
 
   refrescarCanvas() {
     this.canvasService.refrescarCanvas();

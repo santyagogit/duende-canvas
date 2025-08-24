@@ -1,0 +1,113 @@
+:host {
+    display: block;
+}
+
+h2[mat-dialog-title] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin: -24px -24px 24px -24px;
+    padding: 24px;
+    border-radius: 8px 8px 0 0;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+mat-dialog-content {
+    padding: 24px;
+    min-width: 400px;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-3 {
+    gap: 1rem;
+}
+
+.fw-bold {
+    font-weight: 700;
+}
+
+mat-form-field {
+    width: 100%;
+
+    .mat-mdc-form-field-wrapper {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 0.5rem;
+    }
+
+    .mat-mdc-form-field-focus-overlay {
+        background-color: transparent;
+    }
+}
+
+input[matInput] {
+    font-size: 1rem;
+    padding: 8px 12px;
+}
+
+mat-dialog-actions {
+    padding: 16px 24px;
+    margin: 0 -24px -24px -24px;
+    background: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+button[mat-button] {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+}
+
+button[mat-flat-button] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    mat-dialog-content {
+        min-width: 300px;
+        padding: 16px;
+    }
+
+    h2[mat-dialog-title] {
+        margin: -16px -16px 16px -16px;
+        padding: 16px;
+    }
+
+    mat-dialog-actions {
+        padding: 12px 16px;
+        margin: 0 -16px -16px -16px;
+    }
+}

@@ -2,6 +2,72 @@
     <div class="header-wrapper">
         <div class="header">
             <h1>Productos</h1>
+            <div class="header-actions">
+                <button mat-icon-button color="primary" (click)="refreshProducts()" matTooltip="Actualizar">
+                    <mat-icon>refresh</mat-icon>
+                </button>
+                <button mat-stroked-button color="accent" (click)="loadMockProducts()"
+                    matTooltip="Cargar datos de prueba">
+                    <mat-icon>data_object</mat-icon>
+                    Datos de prueba
+                </button>
+            </div>
+        </div>
+
+        <!-- Filtros de consulta -->
+        <div class="filters-section">
+            <mat-card class="filters-card">
+                <mat-card-header>
+                    <mat-card-title>Filtros de Consulta</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                    <div class="filters-grid">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Fecha</mat-label>
+                            <input matInput [matDatepicker]="picker" [value]="queryParams.fecha"
+                                (dateChange)="onFechaChange($event.value)" placeholder="Seleccionar fecha">
+                            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                            <mat-datepicker #picker></mat-datepicker>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Turno</mat-label>
+                            <mat-select [value]="queryParams.turno" (selectionChange)="onTurnoChange($event.value)">
+                                <mat-option *ngFor="let option of turnoOptions" [value]="option.value">
+                                    {{ option.label }}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Operación</mat-label>
+                            <mat-select [value]="queryParams.operacion"
+                                (selectionChange)="onOperacionChange($event.value)">
+                                <mat-option *ngFor="let option of operacionOptions" [value]="option.value">
+                                    {{ option.label }}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+
+                        <div class="checkbox-container">
+                            <mat-checkbox [checked]="queryParams.entrada" (change)="onEntradaChange($event.checked)">
+                                Entrada
+                            </mat-checkbox>
+                        </div>
+                    </div>
+
+                    <div class="filters-actions">
+                        <button mat-raised-button color="primary" (click)="applyFilters()">
+                            <mat-icon>search</mat-icon>
+                            Aplicar Filtros
+                        </button>
+                        <button mat-stroked-button (click)="clearFilters()">
+                            <mat-icon>clear</mat-icon>
+                            Limpiar Filtros
+                        </button>
+                    </div>
+                </mat-card-content>
+            </mat-card>
         </div>
 
         <div class="content-wrapper">
@@ -12,11 +78,32 @@
 
             <div *ngIf="!loading && !error" class="table-container">
                 <div class="table-header">
-                    <mat-form-field appearance="outline" class="search-field">
-                        <mat-label>Buscar productos</mat-label>
-                        <input matInput (keyup)="applyFilter($event)" placeholder="Escribe para filtrar..." #input>
-                        <mat-icon matSuffix>search</mat-icon>
-                    </mat-form-field>
+                    <div class="search-section">
+                        <mat-form-field appearance="outline" class="search-field">
+                            <mat-label>Buscar productos localmente</mat-label>
+                            <input matInput (keyup)="applyFilter($event)" placeholder="Escribe para filtrar..."
+                                #localInput>
+                            <mat-icon matSuffix>search</mat-icon>
+                        </mat-form-field>
+
+                        <div class="api-search">
+                            <mat-form-field appearance="outline" class="api-search-field">
+                                <mat-label>Buscar en API</mat-label>
+                                <input matInput [(ngModel)]="searchQuery" placeholder="Buscar en el servidor..."
+                                    #apiInput>
+                                <mat-icon matSuffix>cloud_search</mat-icon>
+                            </mat-form-field>
+                            <button mat-raised-button color="primary" (click)="searchProducts()"
+                                [disabled]="!searchQuery.trim()">
+                                <mat-icon>search</mat-icon>
+                                Buscar
+                            </button>
+                            <button mat-icon-button (click)="clearSearch()" *ngIf="searchQuery"
+                                matTooltip="Limpiar búsqueda">
+                                <mat-icon>clear</mat-icon>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <table mat-table [dataSource]="dataSource" class="products-table">
@@ -70,10 +157,29 @@
             </div>
 
             <div *ngIf="!loading && error" class="error-container">
-                <mat-icon class="error-icon">error</mat-icon>
-                <h3>Error al cargar productos</h3>
-                <p>No se pudieron cargar los productos. Inténtalo de nuevo.</p>
-                <button mat-raised-button color="primary" (click)="loadProducts()">Reintentar</button>
+                <mat-card class="error-card">
+                    <mat-card-header>
+                        <mat-icon mat-card-avatar class="error-icon">error</mat-icon>
+                        <mat-card-title>Error al cargar productos</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <p>{{ errorMessage || 'No se pudieron cargar los productos. Inténtalo de nuevo.' }}</p>
+                        <mat-chip-set>
+                            <mat-chip color="warn" selected>Error de conexión</mat-chip>
+                            <mat-chip color="accent">API no disponible</mat-chip>
+                        </mat-chip-set>
+                    </mat-card-content>
+                    <mat-card-actions>
+                        <button mat-raised-button color="primary" (click)="loadProducts()">
+                            <mat-icon>refresh</mat-icon>
+                            Reintentar
+                        </button>
+                        <button mat-stroked-button color="accent" (click)="loadMockProducts()">
+                            <mat-icon>data_object</mat-icon>
+                            Usar datos de prueba
+                        </button>
+                    </mat-card-actions>
+                </mat-card>
             </div>
         </div>
     </div>

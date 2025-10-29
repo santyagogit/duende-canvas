@@ -1,14 +1,16 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, of, catchError, throwError } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Producto } from '../../../core/models/product';
+import { ProductoQueryParams } from '../../../core/models/producto-query-params';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProductoService {
   private productoSeleccionado = new BehaviorSubject<Producto | null>(null);
-  private apiUrl = 'http://localhost:3000/api/productos'; // Adjust this URL to match your backend
+  private apiUrl = environment.productosApiUrl;
 
   constructor(private http: HttpClient) { }
 
@@ -21,10 +23,31 @@ export class ProductoService {
     return this.productoSeleccionado.asObservable();
   }
 
-  getProducts(): Observable<Producto[]> {
-    // For now, using mock data. Replace with actual API call when backend is ready
-    // return this.http.get<Producto[]>(this.apiUrl);
+  getProducts(params?: ProductoQueryParams): Observable<Producto[]> {
+    let httpParams = new HttpParams();
 
+    if (params) {
+      if (params.fecha) {
+        httpParams = httpParams.set('fecha', params.fecha.toISOString());
+      }
+      if (params.turno) {
+        httpParams = httpParams.set('turno', params.turno);
+      }
+      if (params.operacion) {
+        httpParams = httpParams.set('operacion', params.operacion);
+      }
+      if (params.entrada !== undefined) {
+        httpParams = httpParams.set('entrada', params.entrada.toString());
+      }
+    }
+
+    return this.http.get<Producto[]>(this.apiUrl, { params: httpParams }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  // Fallback method with mock data for development/testing
+  getProductsMock(): Observable<Producto[]> {
     const productosMock: Producto[] = [
       {
         id: '123456789',
@@ -242,21 +265,64 @@ export class ProductoService {
 
   // Method to get a single product by ID
   getProductById(id: string): Observable<Producto> {
-    return this.http.get<Producto>(`${this.apiUrl}/${id}`);
+    return this.http.get<Producto>(`${this.apiUrl}/${id}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
   // Method to create a new product
   createProduct(producto: Producto): Observable<Producto> {
-    return this.http.post<Producto>(this.apiUrl, producto);
+    return this.http.post<Producto>(this.apiUrl, producto).pipe(
+      catchError(this.handleError)
+    );
   }
 
   // Method to update a product
   updateProduct(id: string, producto: Producto): Observable<Producto> {
-    return this.http.put<Producto>(`${this.apiUrl}/${id}`, producto);
+    return this.http.put<Producto>(`${this.apiUrl}/${id}`, producto).pipe(
+      catchError(this.handleError)
+    );
   }
 
   // Method to delete a product
   deleteProduct(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  // Method to search products
+  searchProducts(query: string): Observable<Producto[]> {
+    return this.http.get<Producto[]>(`${this.apiUrl}/search?q=${encodeURIComponent(query)}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  // Error handling method
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'Ha ocurrido un error desconocido';
+
+    if (error.error instanceof ErrorEvent) {
+      // Client-side error
+      errorMessage = `Error del cliente: ${error.error.message}`;
+    } else {
+      // Server-side error
+      switch (error.status) {
+        case 404:
+          errorMessage = 'No se encontraron productos';
+          break;
+        case 500:
+          errorMessage = 'Error interno del servidor';
+          break;
+        case 0:
+          errorMessage = 'No se pudo conectar con el servidor. Verifica que la API esté ejecutándose.';
+          break;
+        default:
+          errorMessage = `Error del servidor: ${error.status} - ${error.message}`;
+      }
+    }
+
+    console.error('Error en ProductoService:', errorMessage, error);
+    return throwError(() => new Error(errorMessage));
   }
 }

@@ -21,6 +21,12 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ProductoService } from './services/producto.service';
 import { Producto } from '../../core/models/product';
 import { ProductoQueryParams } from '../../core/models/producto-query-params';
+import { CanvasService } from '../editor-etiquetas/services/canvas.service';
+import { PrintService, EtiquetaSize } from '../../core/services/print.service';
+import { PrintConfig } from '../../core/models/print-config';
+import { PrintDialogComponent } from '../../dialogs/print-dialog/print-dialog.component';
+import { EtiquetaService } from '../../core/services/etiqueta.service';
+import { Etiqueta, EtiquetaListItem } from '../../core/models/etiqueta';
 
 @Component({
   selector: 'app-productos',
@@ -43,7 +49,8 @@ import { ProductoQueryParams } from '../../core/models/producto-query-params';
     MatSelectModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    PrintSheetComponent
   ],
   templateUrl: './productos.component.html',
   styleUrl: './productos.component.scss',
@@ -57,36 +64,70 @@ export class ProductosComponent implements OnInit {
   loading = true;
   error = false;
   errorMessage = '';
-  searchQuery = '';
+  productosSeleccionados = new Set<string>(); // IDs de productos seleccionados
+  cantidadesEtiquetas: Map<string, number> = new Map(); // Mapa de productoId -> cantidad de etiquetas
+  etiquetasDisponibles: Etiqueta[] = [];
+  etiquetaSeleccionada: Etiqueta | null = null;
+  mostrarVistaPrevia = false;
+  etiquetasParaVistaPrevia: { x: number; y: number; url: string }[] = [];
+  configVistaPrevia: PrintConfig | null = null;
 
   // Query parameters
   queryParams: ProductoQueryParams = {
-    fecha: undefined,
+    fecha: new Date(), // Fecha actual por defecto
     turno: 'M',
     operacion: 'N',
-    entrada: false
   };
 
   // Options for selects
   turnoOptions = [
     { value: 'M', label: 'Mañana' },
-    { value: 'T', label: 'Tarde' },
-    { value: 'N', label: 'Noche' }
-  ];
-
-  operacionOptions = [
-    { value: 'N', label: 'Normal' },
-    { value: 'R', label: 'Recibidas' }
+    { value: 'T', label: 'Tarde' }
   ];
 
   constructor(
     private productoService: ProductoService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private canvasService: CanvasService,
+    private printService: PrintService,
+    private etiquetaService: EtiquetaService
   ) { }
 
+  // Propiedad para la fecha mínima (fecha actual)
+  fechaMinima = new Date();
+
   ngOnInit(): void {
+    // Establecer fecha actual si no hay fecha
+    if (!this.queryParams.fecha) {
+      this.queryParams.fecha = new Date();
+    }
     this.loadProducts();
+    this.loadEtiquetasDisponibles();
+  }
+
+  loadEtiquetasDisponibles(): void {
+    this.etiquetaService.getUltimasEtiquetas(5).subscribe({
+      next: (etiquetas: EtiquetaListItem[]) => {
+        // Convertir EtiquetaListItem[] a Etiqueta[] para compatibilidad
+        this.etiquetasDisponibles = etiquetas.map(item => ({
+          id: item.id,
+          nombre: item.nombre,
+          width: item.width,
+          height: item.height,
+          objects: null,
+          fechaGuardado: item.fechaGuardado
+        })) as Etiqueta[];
+        if (this.etiquetasDisponibles.length > 0) {
+          this.etiquetaSeleccionada = this.etiquetasDisponibles[0];
+        }
+      },
+      error: (error) => {
+        console.error('Error loading etiquetas:', error);
+        // Si hay error, inicializar con array vacío
+        this.etiquetasDisponibles = [];
+      }
+    });
   }
 
   ngAfterViewInit() {
@@ -163,13 +204,58 @@ export class ProductosComponent implements OnInit {
     });
   }
 
+  toggleProductSelection(producto: Producto): void {
+    if (this.productosSeleccionados.has(producto.id)) {
+      this.productosSeleccionados.delete(producto.id);
+      this.cantidadesEtiquetas.delete(producto.id);
+    } else {
+      this.productosSeleccionados.add(producto.id);
+      // Establecer cantidad por defecto de 5
+      this.cantidadesEtiquetas.set(producto.id, 5);
+    }
+    // Forzar actualización de la vista
+    this.dataSource = new MatTableDataSource(this.productos);
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+    }
+  }
+
+  getCantidadEtiquetas(productoId: string): number {
+    return this.cantidadesEtiquetas.get(productoId) || 5;
+  }
+
+  aumentarCantidad(productoId: string): void {
+    const cantidadActual = this.getCantidadEtiquetas(productoId);
+    if (cantidadActual < 100) {
+      this.cantidadesEtiquetas.set(productoId, cantidadActual + 1);
+    }
+  }
+
+  disminuirCantidad(productoId: string): void {
+    const cantidadActual = this.getCantidadEtiquetas(productoId);
+    if (cantidadActual > 1) {
+      this.cantidadesEtiquetas.set(productoId, cantidadActual - 1);
+    }
+  }
+
+  onCantidadChange(productoId: string, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let valor = parseInt(input.value, 10);
+    if (isNaN(valor) || valor < 1) {
+      valor = 1;
+    } else if (valor > 100) {
+      valor = 100;
+    }
+    this.cantidadesEtiquetas.set(productoId, valor);
+    input.value = valor.toString();
+  }
+
+  isProductSelected(productoId: string): boolean {
+    return this.productosSeleccionados.has(productoId);
+  }
+
   selectProduct(producto: Producto): void {
     this.productoService.setProductoSeleccionado(producto);
-    this.snackBar.open(`Producto "${producto.nombre}" seleccionado`, 'Cerrar', {
-      duration: 2000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top'
-    });
   }
 
   formatPrice(price: number): string {
@@ -181,37 +267,101 @@ export class ProductosComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  // Search products using API
-  searchProducts(): void {
-    if (!this.searchQuery.trim()) {
-      this.loadProducts();
+
+  refreshProducts(): void {
+    this.loadProducts();
+  }
+
+  // Methods to handle parameter changes
+  onFechaChange(fecha: Date | null): void {
+    // Nunca permitir fecha vacía, usar fecha actual si es null
+    this.queryParams.fecha = fecha || new Date();
+  }
+
+  onTurnoChange(turno: string): void {
+    this.queryParams.turno = turno as 'M' | 'T' | 'N';
+  }
+
+  clearFilters(): void {
+    this.queryParams = {
+      fecha: new Date(), // Fecha actual por defecto
+      turno: 'M',
+      operacion: 'N',
+    };
+    this.loadProducts();
+  }
+
+  applyFilters(): void {
+    this.loadProducts();
+  }
+
+  trackByProductId(index: number, producto: Producto): string {
+    return producto.id;
+  }
+
+  onEtiquetaSeleccionadaChange(etiqueta: Etiqueta): void {
+    this.etiquetaSeleccionada = etiqueta;
+  }
+
+  abrirDialogoImpresion(): void {
+    if (this.productosSeleccionados.size === 0) {
+      this.snackBar.open('Debe seleccionar al menos un producto para imprimir', 'Cerrar', {
+        duration: 3000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        panelClass: ['error-snackbar']
+      });
       return;
     }
 
-    this.loading = true;
-    this.error = false;
-    this.errorMessage = '';
+    if (!this.etiquetaSeleccionada) {
+      this.snackBar.open('Debe seleccionar una etiqueta para imprimir', 'Cerrar', {
+        duration: 3000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
 
-    this.productoService.searchProducts(this.searchQuery).subscribe({
-      next: (productos) => {
-        this.productos = productos;
-        this.dataSource = new MatTableDataSource(productos);
-        if (this.paginator) {
-          this.dataSource.paginator = this.paginator;
-        }
-        this.loading = false;
-        this.snackBar.open(`${productos.length} productos encontrados para "${this.searchQuery}"`, 'Cerrar', {
-          duration: 2000,
-          horizontalPosition: 'end',
-          verticalPosition: 'top'
+    // Cargar la etiqueta en el canvas primero
+    this.etiquetaService.getEtiquetaCompleta(this.etiquetaSeleccionada.id!).subscribe({
+      next: async (etiquetaCompleta) => {
+        const canvasData = {
+          width: etiquetaCompleta.width,
+          height: etiquetaCompleta.height,
+          objects: etiquetaCompleta.objects
+        };
+        await this.canvasService.cargarDesdeJSON(JSON.stringify(canvasData));
+
+        const etiquetaSize: EtiquetaSize = {
+          width: etiquetaCompleta.width,
+          height: etiquetaCompleta.height
+        };
+
+        const dialogRef = this.dialog.open(PrintDialogComponent, {
+          data: {
+            hoja: 'A4',
+            etiquetaSize: etiquetaSize,
+            anchoPersonalizado: 600,
+            altoPersonalizado: 800,
+          } satisfies PrintConfig,
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+          if (!result) return;
+
+          const { action, config } = result;
+          config.etiquetaSize = etiquetaSize;
+
+          if (action === 'print') {
+            this.imprimirEtiquetas(config);
+          }
         });
       },
       error: (error) => {
-        console.error('Error searching products:', error);
-        this.error = true;
-        this.errorMessage = error.message || 'Error al buscar productos';
-        this.loading = false;
-        this.snackBar.open(this.errorMessage, 'Cerrar', {
+        console.error('Error loading etiqueta completa:', error);
+        this.snackBar.open('Error al cargar la etiqueta seleccionada', 'Cerrar', {
           duration: 3000,
           horizontalPosition: 'end',
           verticalPosition: 'top',
@@ -221,43 +371,73 @@ export class ProductosComponent implements OnInit {
     });
   }
 
-  clearSearch(): void {
-    this.searchQuery = '';
-    this.loadProducts();
+  async imprimirEtiquetas(config: PrintConfig): Promise<void> {
+    // Preparar lista de productos para imprimir
+    const productosParaImprimir: { producto: Producto; cantidad: number }[] = [];
+
+    this.productosSeleccionados.forEach(productoId => {
+      const producto = this.productos.find(p => p.id === productoId);
+      if (producto) {
+        const cantidad = this.getCantidadEtiquetas(productoId);
+        productosParaImprimir.push({ producto, cantidad });
+      }
+    });
+
+    // Generar etiquetas individuales para cada producto
+    const etiquetasUrls: string[] = [];
+    this.snackBar.open('Generando etiquetas con datos de productos...', 'Cerrar', {
+      duration: 2000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top'
+    });
+
+    try {
+      // Generar una etiqueta por cada producto según su cantidad
+      for (const item of productosParaImprimir) {
+        for (let i = 0; i < item.cantidad; i++) {
+          // Generar la imagen de la etiqueta con los datos del producto
+          // El método generarEtiquetaConProducto ya reemplaza los datos internamente
+          const etiquetaUrl = await this.canvasService.generarEtiquetaConProducto(item.producto);
+          etiquetasUrls.push(etiquetaUrl);
+        }
+      }
+
+      // Generar la distribución de impresión con todas las etiquetas
+      const distribucion = this.printService.calcularDistribucionImpresionConProductos(
+        config,
+        etiquetasUrls
+      );
+
+      // Guardar la distribución para la vista previa
+      this.etiquetasParaVistaPrevia = distribucion.etiquetas;
+      this.configVistaPrevia = config;
+      this.mostrarVistaPrevia = true;
+
+      this.snackBar.open(`${etiquetasUrls.length} etiquetas generadas correctamente`, 'Cerrar', {
+        duration: 2000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top'
+      });
+    } catch (error) {
+      console.error('Error generando etiquetas:', error);
+      this.snackBar.open('Error al generar las etiquetas', 'Cerrar', {
+        duration: 3000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        panelClass: ['error-snackbar']
+      });
+    }
   }
 
-  refreshProducts(): void {
-    this.loadProducts();
+  volverDeVistaPrevia(): void {
+    this.mostrarVistaPrevia = false;
+    this.etiquetasParaVistaPrevia = [];
+    this.configVistaPrevia = null;
   }
 
-  // Methods to handle parameter changes
-  onFechaChange(fecha: Date | null): void {
-    this.queryParams.fecha = fecha || undefined;
-  }
-
-  onTurnoChange(turno: string): void {
-    this.queryParams.turno = turno as 'M' | 'T' | 'N';
-  }
-
-  onOperacionChange(operacion: string): void {
-    this.queryParams.operacion = operacion as 'N' | 'R';
-  }
-
-  onEntradaChange(entrada: boolean): void {
-    this.queryParams.entrada = entrada;
-  }
-
-  clearFilters(): void {
-    this.queryParams = {
-      fecha: undefined,
-      turno: 'M',
-      operacion: 'N',
-      entrada: false
-    };
-    this.loadProducts();
-  }
-
-  applyFilters(): void {
-    this.loadProducts();
+  imprimirDesdeVistaPrevia(): void {
+    setTimeout(() => {
+      window.print();
+    }, 100);
   }
 }

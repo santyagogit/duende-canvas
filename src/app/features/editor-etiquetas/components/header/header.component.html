@@ -6,6 +6,21 @@
 
   <div class="container-fluid px-4 py-2">
     <div class="row">
+      <!-- Columna 0 - Combo de últimas etiquetas -->
+      <div class="col-md-2 d-flex flex-column gap-2 align-items-start">
+        <mat-form-field appearance="fill" class="combo-etiquetas w-100">
+          <mat-label>Últimas etiquetas</mat-label>
+          <mat-select (selectionChange)="cargarEtiquetaDesdeLista($event.value)" placeholder="Seleccionar etiqueta">
+            <mat-option *ngFor="let etiqueta of ultimasEtiquetas" [value]="etiqueta">
+              {{ etiqueta.nombre }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button class="btn btn-info btn-accion" (click)="abrirTodasLasEtiquetas()">
+          Abrir etiquetas
+        </button>
+      </div>
+
       <!-- Columna 1 -->
       <div class="col-md-3 d-flex flex-column gap-2 align-items-start">
         <button class="btn btn-warning btn-accion" (click)="limpiarCanvas()">
@@ -50,9 +65,7 @@
 
       <!-- Columna 4 -->
       <div class="col-md-2 d-flex flex-column gap-2 align-items-start">
-        <button class="btn btn-primary btn-accion" (click)="abrirDialogoImpresion()">
-          Imprimir Etiquetas
-        </button>
+        <!-- Botón imprimir removido, ahora está en Productos -->
       </div>
     </div>
   </div>

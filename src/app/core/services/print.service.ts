@@ -76,4 +76,92 @@ export class PrintService {
       height: hojaPxHeight,
     };
   }
+
+  calcularDistribucionImpresionMultiples(
+    config: PrintConfig,
+    etiquetaUrl: string,
+    cantidadTotal: number
+  ): { etiquetas: EtiquetaDistribuida[]; width: number; height: number; hojas: number } {
+    const hojaSize = this.getHojaSize(config);
+    const hojaPxWidth = this.cmToPx(hojaSize.width);
+    const hojaPxHeight = this.cmToPx(hojaSize.height);
+
+    const etiquetaWidth = config.etiquetaSize.width;
+    const etiquetaHeight = config.etiquetaSize.height;
+
+    const cols = Math.floor(hojaPxWidth / etiquetaWidth);
+    const rows = Math.floor(hojaPxHeight / etiquetaHeight);
+    const etiquetasPorHoja = cols * rows;
+
+    const hojasNecesarias = Math.ceil(cantidadTotal / etiquetasPorHoja);
+
+    const etiquetas: EtiquetaDistribuida[] = [];
+
+    let etiquetasGeneradas = 0;
+    for (let hoja = 0; hoja < hojasNecesarias && etiquetasGeneradas < cantidadTotal; hoja++) {
+      for (let r = 0; r < rows && etiquetasGeneradas < cantidadTotal; r++) {
+        for (let c = 0; c < cols && etiquetasGeneradas < cantidadTotal; c++) {
+          etiquetas.push({
+            x: c * etiquetaWidth,
+            y: r * etiquetaHeight + (hoja * hojaPxHeight),
+            url: etiquetaUrl,
+          });
+          etiquetasGeneradas++;
+        }
+      }
+    }
+
+    return {
+      etiquetas,
+      width: hojaPxWidth,
+      height: hojaPxHeight * hojasNecesarias,
+      hojas: hojasNecesarias,
+    };
+  }
+
+  /**
+   * Calcula la distribución de impresión con múltiples URLs de etiquetas
+   * Cada etiqueta puede tener una URL diferente (para productos diferentes)
+   */
+  calcularDistribucionImpresionConProductos(
+    config: PrintConfig,
+    etiquetasUrls: string[] // Array de URLs, una por cada etiqueta a imprimir
+  ): { etiquetas: EtiquetaDistribuida[]; width: number; height: number; hojas: number } {
+    const hojaSize = this.getHojaSize(config);
+    const hojaPxWidth = this.cmToPx(hojaSize.width);
+    const hojaPxHeight = this.cmToPx(hojaSize.height);
+
+    const etiquetaWidth = config.etiquetaSize.width;
+    const etiquetaHeight = config.etiquetaSize.height;
+
+    const cols = Math.floor(hojaPxWidth / etiquetaWidth);
+    const rows = Math.floor(hojaPxHeight / etiquetaHeight);
+    const etiquetasPorHoja = cols * rows;
+
+    const cantidadTotal = etiquetasUrls.length;
+    const hojasNecesarias = Math.ceil(cantidadTotal / etiquetasPorHoja);
+
+    const etiquetas: EtiquetaDistribuida[] = [];
+
+    let indiceUrl = 0;
+    for (let hoja = 0; hoja < hojasNecesarias && indiceUrl < cantidadTotal; hoja++) {
+      for (let r = 0; r < rows && indiceUrl < cantidadTotal; r++) {
+        for (let c = 0; c < cols && indiceUrl < cantidadTotal; c++) {
+          etiquetas.push({
+            x: c * etiquetaWidth,
+            y: r * etiquetaHeight + (hoja * hojaPxHeight),
+            url: etiquetasUrls[indiceUrl], // Usar la URL específica de esta etiqueta
+          });
+          indiceUrl++;
+        }
+      }
+    }
+
+    return {
+      etiquetas,
+      width: hojaPxWidth,
+      height: hojaPxHeight * hojasNecesarias,
+      hojas: hojasNecesarias,
+    };
+  }
 }

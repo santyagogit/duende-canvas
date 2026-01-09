@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Canvas, FabricImage, FabricObject, Textbox } from 'fabric';
 import { InsertImageDialogComponent } from '../../../dialogs/insert-image-dialog/insert-image-dialog.component';
 import { ConfirmDialogComponent } from '../../../dialogs/confirm-dialog/confirm-dialog.component';
+import { Producto } from '../../../core/models/product';
 
 @Injectable({
   providedIn: 'root',
@@ -286,6 +287,132 @@ export class CanvasService {
       format: 'png',
       multiplier: 1, // asegura tamaño real
     });
+  }
+
+  /**
+   * Genera una etiqueta personalizada con los datos de un producto
+   * Reemplaza los campos dinámicos (ID, NOMBRE, PUNIT) con los datos del producto
+   */
+  async generarEtiquetaConProducto(producto: Producto): Promise<string> {
+    if (!this.canvas) {
+      throw new Error('Canvas no disponible');
+    }
+
+    // Guardar el estado original del canvas
+    const estadoOriginal = this.canvas.toJSON();
+    
+    // Obtener todos los objetos del canvas
+    const objetos = this.canvas.getObjects();
+    
+    // Reemplazar datos en los objetos de texto
+    objetos.forEach((obj) => {
+      if (obj instanceof Textbox) {
+        const texto = obj.text || '';
+        const fontFamily = (obj as any).fontFamily || '';
+        
+        // Detectar ID: si usa fuente Code 128 o contiene marcadores {{ID}} o {ID}
+        if (fontFamily === 'Code 128' || 
+            texto.includes('{{ID}}') || 
+            texto.includes('{ID}') ||
+            (texto.match(/^\d+$/) && texto.length > 5)) { // ID numérico largo
+          obj.text = producto.id;
+          if (fontFamily !== 'Code 128') {
+            (obj as any).fontFamily = 'Code 128';
+          }
+        }
+        // Detectar NOMBRE: si contiene marcadores {{NOMBRE}} o {NOMBRE}, o es texto descriptivo
+        else if (texto.includes('{{NOMBRE}}') || 
+                 texto.includes('{NOMBRE}') ||
+                 (texto.length > 10 && texto.length < 100 && !texto.match(/^\$\d+\.\d{2}$/))) {
+          // Si es texto largo sin ser precio, probablemente es nombre
+          obj.text = producto.nombre;
+        }
+        // Detectar PUNIT (precio): si contiene $, marcadores {{PUNIT}} o {PUNIT}, o formato de precio
+        else if (texto.includes('{{PUNIT}}') || 
+                 texto.includes('{PUNIT}') ||
+                 texto.match(/^\$\d+\.\d{2}$/) ||
+                 texto.match(/\$\d+\.\d{2}/)) {
+          const precioFormateado = `$${producto.precio.toFixed(2)}`;
+          obj.text = precioFormateado;
+        }
+        
+        // Forzar actualización del texto
+        obj.setCoords();
+      }
+    });
+
+    // Renderizar el canvas con los cambios
+    this.canvas.renderAll();
+
+    // Generar la imagen DataURL
+    const dataURL = this.canvas.toDataURL({
+      format: 'png',
+      multiplier: 1,
+    });
+
+    // Restaurar el estado original del canvas
+    await new Promise<void>((resolve) => {
+      this.canvas.loadFromJSON(estadoOriginal, () => {
+        this.canvas.getObjects().forEach((obj) => {
+          this.aplicarEstilosPorDefecto(obj);
+          this.redondearControlRotacion(obj);
+        });
+        resolve();
+      });
+    });
+
+    await (document as any).fonts.ready;
+    this.canvas.getObjects().forEach((obj) => obj.setCoords());
+    this.canvas.renderAll();
+
+    return dataURL;
+  }
+
+  /**
+   * Detecta y reemplaza campos dinámicos en la etiqueta basándose en el contenido del texto
+   * Busca patrones como el ID, nombre o precio del producto seleccionado actualmente
+   */
+  async reemplazarDatosEnEtiqueta(producto: Producto): Promise<void> {
+    if (!this.canvas) {
+      return;
+    }
+
+    const objetos = this.canvas.getObjects();
+
+    objetos.forEach((obj) => {
+      if (obj instanceof Textbox) {
+        const texto = obj.text || '';
+        
+        // Buscar y reemplazar ID
+        if (texto === producto.id) {
+          // Ya está correcto, no hacer nada
+        } else if (texto.includes('{{ID}}') || texto.includes('{ID}')) {
+          obj.text = texto.replace(/\{\{?ID\}\}?/g, producto.id);
+        }
+        
+        // Buscar y reemplazar NOMBRE
+        if (texto === producto.nombre) {
+          // Ya está correcto, no hacer nada
+        } else if (texto.includes('{{NOMBRE}}') || texto.includes('{NOMBRE}')) {
+          obj.text = texto.replace(/\{\{?NOMBRE\}\}?/g, producto.nombre);
+        }
+        
+        // Buscar y reemplazar PUNIT (precio unitario)
+        const precioFormateado = `$${producto.precio.toFixed(2)}`;
+        if (texto === precioFormateado) {
+          // Ya está correcto, no hacer nada
+        } else if (texto.includes('{{PUNIT}}') || texto.includes('{PUNIT}')) {
+          obj.text = texto.replace(/\{\{?PUNIT\}\}?/g, precioFormateado);
+        } else if (texto.match(/\$\d+\.\d{2}/)) {
+          // Si el texto contiene un precio, reemplazarlo
+          obj.text = precioFormateado;
+        }
+        
+        obj.setCoords();
+      }
+    });
+
+    this.canvas.renderAll();
   }
 
   public refrescarCanvas(): void {

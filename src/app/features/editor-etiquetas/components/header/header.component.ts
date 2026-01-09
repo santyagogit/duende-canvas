@@ -2,6 +2,10 @@ import { Component, EventEmitter, Output, ViewChild } from '@angular/core';
 import { CanvasService } from '../../services/canvas.service';
 import { Producto } from '../../../../core/models/product';
 import { ProductoService } from '../../../productos/services/producto.service';
+import { EtiquetaService } from '../../../../core/services/etiqueta.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../../../dialogs/confirm-dialog/confirm-dialog.component';
 import {
   MatFormField,
   MatFormFieldModule,
@@ -16,11 +20,11 @@ import {
   PrintService,
 } from '../../../../core/services/print.service';
 import { PrintDialogComponent } from '../../../../dialogs/print-dialog/print-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
 import { PrintSheetComponent } from '../print-sheet/print-sheet.component';
 import { FormsModule } from '@angular/forms';
 import { MatOptionModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { AppComponent } from '../../../../app.component';
 
 @Component({
@@ -32,6 +36,7 @@ import { AppComponent } from '../../../../app.component';
     MatFormFieldModule,
     MatSelectModule,
     MatButtonModule,
+    MatSnackBarModule,
     CommonModule,
     PrintSheetComponent,
     FormsModule,
@@ -43,6 +48,7 @@ export class HeaderComponent {
   etiquetaSeleccionada: EtiquetaSize = { width: 400, height: 200 };
   productos: Producto[] = [];
   productoSeleccionado: Producto | null = null;
+  ultimasEtiquetas: any[] = [];
 
   etiquetasParaVistaPrevia: { x: number; y: number; url: string }[] = [];
   //configActualHoja!: HojaSize;
@@ -56,9 +62,12 @@ export class HeaderComponent {
     private canvasService: CanvasService,
     private productoService: ProductoService,
     private printService: PrintService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private etiquetaService: EtiquetaService,
+    private snackBar: MatSnackBar
   ) {
     this.cargarProductos();
+    this.cargarUltimasEtiquetas();
   }
 
   cargarProductos() {
@@ -122,7 +131,143 @@ export class HeaderComponent {
   }
 
   guardarEtiqueta() {
-    this.canvasService.guardarComoJSON();
+    const canvas = this.canvasService.getCanvas();
+    if (!canvas) {
+      this.snackBar.open('No hay canvas disponible', 'Cerrar', {
+        duration: 2000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top'
+      });
+      return;
+    }
+
+    // Solicitar nombre de la etiqueta
+    const nombreEtiqueta = prompt('Ingrese el nombre para la etiqueta:');
+    if (!nombreEtiqueta || nombreEtiqueta.trim() === '') {
+      return;
+    }
+
+    const nombre = nombreEtiqueta.trim();
+    const width = canvas.getWidth();
+    const height = canvas.getHeight();
+    const objects = canvas.toJSON().objects;
+
+    // Verificar si el nombre ya existe
+    this.etiquetaService.verificarNombreExistente(nombre).subscribe({
+      next: (existe) => {
+        if (existe) {
+          const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '400px',
+            data: {
+              title: 'Etiqueta existente',
+              message: `Ya existe una etiqueta con el nombre "${nombre}". ¿Desea sobrescribirla?`
+            }
+          });
+
+          dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+              this.guardarEtiquetaEnBD(nombre, width, height, objects);
+            }
+          });
+        } else {
+          this.guardarEtiquetaEnBD(nombre, width, height, objects);
+        }
+      },
+      error: (error) => {
+        console.error('Error verificando nombre:', error);
+        // Intentar guardar de todos modos
+        this.guardarEtiquetaEnBD(nombre, width, height, objects);
+      }
+    });
+  }
+
+  private guardarEtiquetaEnBD(nombre: string, width: number, height: number, objects: any): void {
+    this.etiquetaService.guardarEtiqueta({
+      nombre,
+      width,
+      height,
+      objects
+    }).subscribe({
+      next: () => {
+        this.snackBar.open(`Etiqueta "${nombre}" guardada exitosamente`, 'Cerrar', {
+          duration: 2000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top'
+        });
+        this.cargarUltimasEtiquetas();
+      },
+      error: (error) => {
+        console.error('Error guardando etiqueta:', error);
+        this.snackBar.open('Error al guardar la etiqueta', 'Cerrar', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
+  }
+
+  cargarUltimasEtiquetas(): void {
+    this.etiquetaService.getUltimasEtiquetas(5).subscribe({
+      next: (etiquetas) => {
+        this.ultimasEtiquetas = etiquetas;
+      },
+      error: (error) => {
+        console.error('Error cargando últimas etiquetas:', error);
+      }
+    });
+  }
+
+  cargarEtiquetaDesdeLista(etiqueta: any): void {
+    this.etiquetaService.getEtiquetaCompleta(etiqueta.id).subscribe({
+      next: async (etiquetaCompleta) => {
+        const canvasData = {
+          width: etiquetaCompleta.width,
+          height: etiquetaCompleta.height,
+          objects: etiquetaCompleta.objects
+        };
+        await this.canvasService.cargarDesdeJSON(JSON.stringify(canvasData));
+        this.etiquetaSeleccionada = {
+          width: etiquetaCompleta.width,
+          height: etiquetaCompleta.height
+        };
+        this.snackBar.open(`Etiqueta "${etiquetaCompleta.nombre}" cargada`, 'Cerrar', {
+          duration: 2000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top'
+        });
+      },
+      error: (error) => {
+        console.error('Error cargando etiqueta:', error);
+        this.snackBar.open('Error al cargar la etiqueta', 'Cerrar', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
+  }
+
+  abrirTodasLasEtiquetas(): void {
+    this.etiquetaService.getAllEtiquetas().subscribe({
+      next: (etiquetas) => {
+        // Aquí podrías abrir un diálogo con todas las etiquetas
+        // Por ahora solo mostramos en consola
+        console.log('Todas las etiquetas:', etiquetas);
+        this.ultimasEtiquetas = etiquetas;
+      },
+      error: (error) => {
+        console.error('Error cargando todas las etiquetas:', error);
+        this.snackBar.open('Error al cargar las etiquetas', 'Cerrar', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
   }
 
   cargarEtiqueta() {

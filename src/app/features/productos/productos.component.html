@@ -25,7 +25,8 @@
                         <mat-form-field appearance="outline">
                             <mat-label>Fecha</mat-label>
                             <input matInput [matDatepicker]="picker" [value]="queryParams.fecha"
-                                (dateChange)="onFechaChange($event.value)" placeholder="Seleccionar fecha">
+                                (dateChange)="onFechaChange($event.value)" [min]="fechaMinima"
+                                placeholder="Seleccionar fecha" required>
                             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                             <mat-datepicker #picker></mat-datepicker>
                         </mat-form-field>
@@ -38,22 +39,6 @@
                                 </mat-option>
                             </mat-select>
                         </mat-form-field>
-
-                        <mat-form-field appearance="outline">
-                            <mat-label>Operación</mat-label>
-                            <mat-select [value]="queryParams.operacion"
-                                (selectionChange)="onOperacionChange($event.value)">
-                                <mat-option *ngFor="let option of operacionOptions" [value]="option.value">
-                                    {{ option.label }}
-                                </mat-option>
-                            </mat-select>
-                        </mat-form-field>
-
-                        <div class="checkbox-container">
-                            <mat-checkbox [checked]="queryParams.entrada" (change)="onEntradaChange($event.checked)">
-                                Entrada
-                            </mat-checkbox>
-                        </div>
                     </div>
 
                     <div class="filters-actions">
@@ -64,6 +49,24 @@
                         <button mat-stroked-button (click)="clearFilters()">
                             <mat-icon>clear</mat-icon>
                             Limpiar Filtros
+                        </button>
+                    </div>
+
+                    <!-- Selector de etiqueta -->
+                    <div class="etiqueta-selector">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Etiqueta para impresión</mat-label>
+                            <mat-select [value]="etiquetaSeleccionada"
+                                (selectionChange)="onEtiquetaSeleccionadaChange($event.value)">
+                                <mat-option *ngFor="let etiqueta of etiquetasDisponibles" [value]="etiqueta">
+                                    {{ etiqueta.nombre }} ({{ etiqueta.width }}x{{ etiqueta.height }}px)
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                        <button mat-raised-button color="primary" (click)="abrirDialogoImpresion()"
+                            [disabled]="productosSeleccionados.size === 0 || !etiquetaSeleccionada">
+                            <mat-icon>print</mat-icon>
+                            Imprimir Etiquetas
                         </button>
                     </div>
                 </mat-card-content>
@@ -86,23 +89,6 @@
                             <mat-icon matSuffix>search</mat-icon>
                         </mat-form-field>
 
-                        <div class="api-search">
-                            <mat-form-field appearance="outline" class="api-search-field">
-                                <mat-label>Buscar en API</mat-label>
-                                <input matInput [(ngModel)]="searchQuery" placeholder="Buscar en el servidor..."
-                                    #apiInput>
-                                <mat-icon matSuffix>cloud_search</mat-icon>
-                            </mat-form-field>
-                            <button mat-raised-button color="primary" (click)="searchProducts()"
-                                [disabled]="!searchQuery.trim()">
-                                <mat-icon>search</mat-icon>
-                                Buscar
-                            </button>
-                            <button mat-icon-button (click)="clearSearch()" *ngIf="searchQuery"
-                                matTooltip="Limpiar búsqueda">
-                                <mat-icon>clear</mat-icon>
-                            </button>
-                        </div>
                     </div>
                 </div>
 
@@ -135,22 +121,39 @@
                     <ng-container matColumnDef="acciones">
                         <th mat-header-cell *matHeaderCellDef>Acciones</th>
                         <td mat-cell *matCellDef="let producto">
-                            <button mat-icon-button color="primary" (click)="selectProduct(producto)"
-                                matTooltip="Seleccionar producto">
-                                <mat-icon>check_circle</mat-icon>
+                            <mat-checkbox [checked]="isProductSelected(producto.id)"
+                                (change)="toggleProductSelection(producto)" (click)="$event.stopPropagation()"
+                                matTooltip="Seleccionar para imprimir">
+                            </mat-checkbox>
+                            <button mat-icon-button [color]="isProductSelected(producto.id) ? 'primary' : ''"
+                                (click)="selectProduct(producto); toggleProductSelection(producto)"
+                                matTooltip="Seleccionar producto" [class.selected]="isProductSelected(producto.id)">
+                                <mat-icon [style.color]="isProductSelected(producto.id) ? '#3f51b5' : '#9e9e9e'">
+                                    check_circle
+                                </mat-icon>
                             </button>
-                            <button mat-icon-button color="accent" matTooltip="Editar producto">
-                                <mat-icon>edit</mat-icon>
-                            </button>
-                            <button mat-icon-button color="warn" matTooltip="Eliminar producto">
-                                <mat-icon>delete</mat-icon>
-                            </button>
+                            <div class="cantidad-etiquetas" *ngIf="isProductSelected(producto.id)"
+                                (click)="$event.stopPropagation()">
+                                <button mat-icon-button (click)="disminuirCantidad(producto.id)"
+                                    [disabled]="getCantidadEtiquetas(producto.id) <= 1" matTooltip="Disminuir cantidad">
+                                    <mat-icon>remove</mat-icon>
+                                </button>
+                                <input type="number" [value]="getCantidadEtiquetas(producto.id)"
+                                    (input)="onCantidadChange(producto.id, $event)" min="1" max="100"
+                                    class="cantidad-input" matTooltip="Cantidad de etiquetas">
+                                <button mat-icon-button (click)="aumentarCantidad(producto.id)"
+                                    [disabled]="getCantidadEtiquetas(producto.id) >= 100"
+                                    matTooltip="Aumentar cantidad">
+                                    <mat-icon>add</mat-icon>
+                                </button>
+                            </div>
                         </td>
                     </ng-container>
 
                     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="selectProduct(row)"
-                        class="product-row"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns; trackBy: trackByProductId"
+                        (click)="selectProduct(row)" [class.selected]="isProductSelected(row.id)"
+                        [attr.data-product-id]="row.id" class="product-row"></tr>
                 </table>
 
                 <mat-paginator [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons></mat-paginator>
@@ -182,5 +185,26 @@
                 </mat-card>
             </div>
         </div>
+    </div>
+
+    <!-- Vista previa de impresión -->
+    <div *ngIf="mostrarVistaPrevia && configVistaPrevia" class="vista-previa-container">
+        <div class="vista-previa-header">
+            <h2>Vista Previa de Impresión</h2>
+            <div class="vista-previa-actions">
+                <button mat-raised-button color="primary" (click)="imprimirDesdeVistaPrevia()">
+                    <mat-icon>print</mat-icon>
+                    Imprimir
+                </button>
+                <button mat-stroked-button (click)="volverDeVistaPrevia()">
+                    <mat-icon>arrow_back</mat-icon>
+                    Volver
+                </button>
+            </div>
+        </div>
+        <app-print-sheet 
+            [config]="configVistaPrevia" 
+            [etiquetas]="etiquetasParaVistaPrevia">
+        </app-print-sheet>
     </div>
 </div>

@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+
+Este es un sistema que permite la creacion, edicion y o eliminacion de etiquetas para un vendedor de productos a la vista. Asi mismo como obtener los productos por la api para seleccionar los mismos y realizar la impresion de las mismas.

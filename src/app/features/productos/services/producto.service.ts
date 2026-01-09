@@ -36,9 +36,6 @@ export class ProductoService {
       if (params.operacion) {
         httpParams = httpParams.set('operacion', params.operacion);
       }
-      if (params.entrada !== undefined) {
-        httpParams = httpParams.set('entrada', params.entrada.toString());
-      }
     }
 
     return this.http.get<Producto[]>(this.apiUrl, { params: httpParams }).pipe(

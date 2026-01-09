@@ -27,6 +27,7 @@ import { PrintConfig } from '../../core/models/print-config';
 import { PrintDialogComponent } from '../../dialogs/print-dialog/print-dialog.component';
 import { EtiquetaService } from '../../core/services/etiqueta.service';
 import { Etiqueta, EtiquetaListItem } from '../../core/models/etiqueta';
+import { PrintSheetComponent } from '../editor-etiquetas/components/print-sheet/print-sheet.component';
 
 @Component({
   selector: 'app-productos',
@@ -50,7 +51,7 @@ import { Etiqueta, EtiquetaListItem } from '../../core/models/etiqueta';
     MatDatepickerModule,
     MatNativeDateModule,
     MatCheckboxModule,
-    PrintSheetComponent
+    PrintSheetComponent,
   ],
   templateUrl: './productos.component.html',
   styleUrl: './productos.component.scss',

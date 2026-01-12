@@ -3,7 +3,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatPaginatorModule, MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -52,6 +52,29 @@ import { PrintSheetComponent } from '../editor-etiquetas/components/print-sheet/
     MatNativeDateModule,
     MatCheckboxModule,
     PrintSheetComponent,
+  ],
+  providers: [
+    {
+      provide: MatPaginatorIntl,
+      useFactory: () => {
+        const paginatorIntl = new MatPaginatorIntl();
+        paginatorIntl.itemsPerPageLabel = 'Items por página:';
+        paginatorIntl.nextPageLabel = 'Siguiente página';
+        paginatorIntl.previousPageLabel = 'Página anterior';
+        paginatorIntl.firstPageLabel = 'Primera página';
+        paginatorIntl.lastPageLabel = 'Última página';
+        paginatorIntl.getRangeLabel = (page: number, pageSize: number, length: number) => {
+          if (length === 0 || pageSize === 0) {
+            return `0 de ${length}`;
+          }
+          length = Math.max(length, 0);
+          const startIndex = page * pageSize;
+          const endIndex = startIndex < length ? Math.min(startIndex + pageSize, length) : startIndex + pageSize;
+          return `${startIndex + 1} - ${endIndex} de ${length}`;
+        };
+        return paginatorIntl;
+      }
+    }
   ],
   templateUrl: './productos.component.html',
   styleUrl: './productos.component.scss',

@@ -3,7 +3,7 @@ import { EditorEtiquetasComponent } from './features/editor-etiquetas//editor-et
 import { ProductosComponent } from './features/productos/productos.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'editor', pathMatch: 'full' },
+  { path: '', redirectTo: 'productos', pathMatch: 'full' },
   { path: 'editor', component: EditorEtiquetasComponent },
   { path: 'productos', component: ProductosComponent },
 ];

@@ -6,11 +6,6 @@
                 <button mat-icon-button color="primary" (click)="refreshProducts()" matTooltip="Actualizar">
                     <mat-icon>refresh</mat-icon>
                 </button>
-                <button mat-stroked-button color="accent" (click)="loadMockProducts()"
-                    matTooltip="Cargar datos de prueba">
-                    <mat-icon>data_object</mat-icon>
-                    Datos de prueba
-                </button>
             </div>
         </div>
 
@@ -134,7 +129,7 @@
                         [attr.data-product-id]="row.id" class="product-row"></tr>
                 </table>
 
-                <mat-paginator [pageSizeOptions]="[5, 10, 25, 50]" [pageSize]="10" itemsPerPageLabel="Items por página" showFirstLastButtons></mat-paginator>
+                <mat-paginator [pageSizeOptions]="[5, 10, 25, 50]" [pageSize]="10" showFirstLastButtons></mat-paginator>
             </div>
 
             <div *ngIf="!loading && error" class="error-container">

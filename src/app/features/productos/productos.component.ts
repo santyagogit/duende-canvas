@@ -66,7 +66,6 @@ export class ProductosComponent implements OnInit {
   error = false;
   errorMessage = '';
   productosSeleccionados = new Set<string>(); // IDs de productos seleccionados
-  cantidadesEtiquetas: Map<string, number> = new Map(); // Mapa de productoId -> cantidad de etiquetas
   etiquetasDisponibles: Etiqueta[] = [];
   etiquetaSeleccionada: Etiqueta | null = null;
   mostrarVistaPrevia = false;
@@ -208,47 +207,14 @@ export class ProductosComponent implements OnInit {
   toggleProductSelection(producto: Producto): void {
     if (this.productosSeleccionados.has(producto.id)) {
       this.productosSeleccionados.delete(producto.id);
-      this.cantidadesEtiquetas.delete(producto.id);
     } else {
       this.productosSeleccionados.add(producto.id);
-      // Establecer cantidad por defecto de 5
-      this.cantidadesEtiquetas.set(producto.id, 5);
     }
     // Forzar actualización de la vista
     this.dataSource = new MatTableDataSource(this.productos);
     if (this.paginator) {
       this.dataSource.paginator = this.paginator;
     }
-  }
-
-  getCantidadEtiquetas(productoId: string): number {
-    return this.cantidadesEtiquetas.get(productoId) || 5;
-  }
-
-  aumentarCantidad(productoId: string): void {
-    const cantidadActual = this.getCantidadEtiquetas(productoId);
-    if (cantidadActual < 100) {
-      this.cantidadesEtiquetas.set(productoId, cantidadActual + 1);
-    }
-  }
-
-  disminuirCantidad(productoId: string): void {
-    const cantidadActual = this.getCantidadEtiquetas(productoId);
-    if (cantidadActual > 1) {
-      this.cantidadesEtiquetas.set(productoId, cantidadActual - 1);
-    }
-  }
-
-  onCantidadChange(productoId: string, event: Event): void {
-    const input = event.target as HTMLInputElement;
-    let valor = parseInt(input.value, 10);
-    if (isNaN(valor) || valor < 1) {
-      valor = 1;
-    } else if (valor > 100) {
-      valor = 100;
-    }
-    this.cantidadesEtiquetas.set(productoId, valor);
-    input.value = valor.toString();
   }
 
   isProductSelected(productoId: string): boolean {
@@ -374,13 +340,12 @@ export class ProductosComponent implements OnInit {
 
   async imprimirEtiquetas(config: PrintConfig): Promise<void> {
     // Preparar lista de productos para imprimir
-    const productosParaImprimir: { producto: Producto; cantidad: number }[] = [];
+    const productosParaImprimir: Producto[] = [];
 
     this.productosSeleccionados.forEach(productoId => {
       const producto = this.productos.find(p => p.id === productoId);
       if (producto) {
-        const cantidad = this.getCantidadEtiquetas(productoId);
-        productosParaImprimir.push({ producto, cantidad });
+        productosParaImprimir.push(producto);
       }
     });
 
@@ -393,14 +358,12 @@ export class ProductosComponent implements OnInit {
     });
 
     try {
-      // Generar una etiqueta por cada producto según su cantidad
-      for (const item of productosParaImprimir) {
-        for (let i = 0; i < item.cantidad; i++) {
-          // Generar la imagen de la etiqueta con los datos del producto
-          // El método generarEtiquetaConProducto ya reemplaza los datos internamente
-          const etiquetaUrl = await this.canvasService.generarEtiquetaConProducto(item.producto);
-          etiquetasUrls.push(etiquetaUrl);
-        }
+      // Generar una etiqueta por cada producto
+      for (const producto of productosParaImprimir) {
+        // Generar la imagen de la etiqueta con los datos del producto
+        // El método generarEtiquetaConProducto ya reemplaza los datos internamente
+        const etiquetaUrl = await this.canvasService.generarEtiquetaConProducto(producto);
+        etiquetasUrls.push(etiquetaUrl);
       }
 
       // Generar la distribución de impresión con todas las etiquetas

@@ -1,10 +1,10 @@
 <nav class="top-nav">
   <div class="nav-left">
-    <button class="nav-button" (click)="guardarEtiqueta()">
+    <button *ngIf="mostrarBotonesEtiquetas" class="nav-button" (click)="guardarEtiqueta()">
       <span class="button-icon">💾</span>
       Guardar Etiqueta
     </button>
-    <button class="nav-button" (click)="cargarEtiqueta()">
+    <button *ngIf="mostrarBotonesEtiquetas" class="nav-button" (click)="cargarEtiqueta()">
       <span class="button-icon">📁</span>
       Cargar Etiqueta
     </button>

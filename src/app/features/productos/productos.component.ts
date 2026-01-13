@@ -117,9 +117,6 @@ export class ProductosComponent implements OnInit {
     private etiquetaService: EtiquetaService
   ) { }
 
-  // Propiedad para la fecha mínima (fecha actual)
-  fechaMinima = new Date();
-
   ngOnInit(): void {
     // Establecer fecha actual si no hay fecha
     if (!this.queryParams.fecha) {
